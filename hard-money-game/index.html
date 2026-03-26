@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>The Ledger & The Sword</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+
+        <!-- Title Screen -->
+        <div id="title-screen" class="overlay title-screen">
+            <div class="title-content">
+                <h1 class="game-title">The Ledger<br>&amp; The Sword</h1>
+                <p class="title-subtitle">A Hard Money Lending Adventure</p>
+                <button id="btn-start" class="pixel-btn pulse">PRESS START</button>
+            </div>
+        </div>
+
+        <!-- Name Input Screen -->
+        <div id="name-screen" class="overlay name-input-screen hidden">
+            <div class="name-content">
+                <h2 class="screen-title">NAME THY KNIGHT</h2>
+                <input type="text" id="player-name-input" class="pixel-input" maxlength="12" placeholder="Enter name..." autocomplete="off">
+                <button id="btn-name-confirm" class="pixel-btn">BEGIN QUEST</button>
+            </div>
+        </div>
+
+        <!-- Intro Cutscene -->
+        <div id="cutscene-overlay" class="overlay cutscene-overlay hidden">
+            <canvas id="cutscene-canvas" width="800" height="350"></canvas>
+            <div class="cutscene-box">
+                <div class="cutscene-speaker" id="cutscene-speaker"></div>
+                <div class="cutscene-text" id="cutscene-text"></div>
+                <div class="cutscene-prompt" id="cutscene-prompt">Click to continue...</div>
+            </div>
+            <button class="cutscene-skip" id="btn-skip-cutscene">SKIP</button>
+        </div>
+
+        <!-- World Map -->
+        <div id="map-screen" class="overlay map-overlay hidden">
+            <h2 class="screen-title">KINGDOM OF CAPITALON</h2>
+            <div class="map-container">
+                <canvas id="map-canvas" width="800" height="450"></canvas>
+                <div id="map-nodes"></div>
+            </div>
+            <div class="map-footer">
+                <span class="gold-display" id="map-gold">Gold: 0</span>
+                <button class="pixel-btn small" id="btn-shop-from-map">SHOP</button>
+                <button class="pixel-btn small" id="btn-codex">CODEX</button>
+                <button class="pixel-btn small" id="btn-settings">SETTINGS</button>
+            </div>
+        </div>
+
+        <!-- Combat HUD -->
+        <div id="combat-hud" class="hud hidden">
+            <div class="hud-top">
+                <div class="boss-info">
+                    <span class="boss-name" id="boss-name">Boss Name</span>
+                    <div class="boss-hp-bar">
+                        <div class="hp-fill boss-fill" id="boss-hp-fill"></div>
+                    </div>
+                </div>
+                <div class="stage-indicator" id="stage-indicator">Stage 1</div>
+            </div>
+            <div class="hud-bottom-left">
+                <div class="player-info">
+                    <span class="player-name-display" id="hud-player-name">Knight</span>
+                    <div class="hp-bar">
+                        <div class="hp-fill player-fill" id="player-hp-fill"></div>
+                    </div>
+                    <span class="hp-text" id="hp-text">5/5</span>
+                </div>
+            </div>
+            <div class="combo-counter hidden" id="combo-counter">
+                <span class="combo-text" id="combo-text">COMBO x3</span>
+            </div>
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar">
+                    <div class="timer-fill" id="timer-fill"></div>
+                </div>
+                <span class="timer-text" id="timer-text">15</span>
+            </div>
+            <div class="gold-counter">
+                <span id="combat-gold">0</span> G
+            </div>
+        </div>
+
+        <!-- Question Panel -->
+        <div id="question-panel" class="question-panel hidden">
+            <div class="question-text" id="question-text">Question goes here?</div>
+            <div class="answers-container" id="answers-container">
+                <button class="answer-btn" data-index="0">Answer 1</button>
+                <button class="answer-btn" data-index="1">Answer 2</button>
+                <button class="answer-btn" data-index="2">Answer 3</button>
+            </div>
+            <div class="hint-container">
+                <button class="hint-btn" id="btn-hint">HINT (1 free)</button>
+            </div>
+            <div class="explanation hidden" id="explanation-box">
+                <p id="explanation-text"></p>
+            </div>
+        </div>
+
+        <!-- Floating damage numbers container -->
+        <div id="damage-numbers"></div>
+
+        <!-- Shop Overlay -->
+        <div id="shop-screen" class="overlay shop-overlay hidden">
+            <h2 class="screen-title">GOLDBOTTOM'S EMPORIUM</h2>
+            <div class="shop-layout">
+                <div class="character-preview">
+                    <canvas id="shop-preview-canvas" width="200" height="250"></canvas>
+                    <div class="equipped-label">Equipped</div>
+                </div>
+                <div class="shop-content">
+                    <div class="shop-tabs">
+                        <button class="shop-tab active" data-tab="weapons">SWORDS</button>
+                        <button class="shop-tab" data-tab="helmets">HELMETS</button>
+                        <button class="shop-tab" data-tab="armor">ARMOR</button>
+                        <button class="shop-tab" data-tab="capes">CAPES</button>
+                        <button class="shop-tab" data-tab="consumables">ITEMS</button>
+                    </div>
+                    <div class="shop-grid" id="shop-grid"></div>
+                    <div class="shopkeeper-quote" id="shopkeeper-quote">"Welcome, Debt Knight!"</div>
+                </div>
+            </div>
+            <div class="shop-footer">
+                <span class="gold-display" id="shop-gold">Gold: 0</span>
+                <button class="pixel-btn" id="btn-leave-shop">LEAVE SHOP</button>
+            </div>
+        </div>
+
+        <!-- Codex / Ledger -->
+        <div id="codex-screen" class="overlay codex-overlay hidden">
+            <h2 class="screen-title">THE LEDGER OF WEALTH</h2>
+            <div class="codex-content" id="codex-content">
+                <p class="codex-empty">No fragments recovered yet...</p>
+            </div>
+            <button class="pixel-btn" id="btn-close-codex">CLOSE</button>
+        </div>
+
+        <!-- Victory Screen (per boss) -->
+        <div id="victory-screen" class="overlay victory-screen hidden">
+            <h2 class="victory-title" id="victory-title">VICTORY!</h2>
+            <div class="victory-content">
+                <div class="gold-earned" id="gold-earned">+50 Gold</div>
+                <div class="fragment-recovered" id="fragment-recovered">
+                    Ledger Fragment Recovered!<br>
+                    <span id="fragment-topic">Topic: Basic Lending Terms</span>
+                </div>
+                <div class="battle-stats" id="battle-stats"></div>
+            </div>
+            <button class="pixel-btn" id="btn-victory-continue">CONTINUE</button>
+        </div>
+
+        <!-- Death Screen -->
+        <div id="death-screen" class="overlay death-screen hidden">
+            <h2 class="death-title">DEFEATED</h2>
+            <p class="death-message" id="death-message">The Loan Goblin sends you home...</p>
+            <p class="death-subtitle">But Debt Knights don't quit.</p>
+            <button class="pixel-btn" id="btn-retry">TRY AGAIN</button>
+        </div>
+
+        <!-- Game Complete Screen -->
+        <div id="complete-screen" class="overlay victory-screen hidden">
+            <h2 class="victory-title">THE LEDGER IS RESTORED!</h2>
+            <div class="victory-content">
+                <p>Capitalon is saved, Sir <span id="complete-name">Knight</span>!</p>
+                <p>A true Debt Knight never stops learning.</p>
+                <div class="share-card" id="share-card"></div>
+            </div>
+            <button class="pixel-btn" id="btn-endless">ENDLESS MODE</button>
+            <button class="pixel-btn" id="btn-share">SHARE VICTORY</button>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settings-screen" class="overlay settings-panel hidden">
+            <h2 class="screen-title">SETTINGS</h2>
+            <div class="settings-content">
+                <div class="setting-row">
+                    <label>Master Volume</label>
+                    <input type="range" id="master-volume" min="0" max="100" value="70">
+                </div>
+                <div class="setting-row">
+                    <label>Music Volume</label>
+                    <input type="range" id="music-volume" min="0" max="100" value="50">
+                </div>
+                <div class="setting-row">
+                    <label>SFX Volume</label>
+                    <input type="range" id="sfx-volume" min="0" max="100" value="80">
+                </div>
+                <div class="setting-row">
+                    <label>Skip Cutscenes</label>
+                    <input type="checkbox" id="skip-cutscenes">
+                </div>
+            </div>
+            <button class="pixel-btn" id="btn-close-settings">CLOSE</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>
