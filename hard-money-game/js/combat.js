@@ -488,7 +488,50 @@ function onPlayerDeath() {
             `You survived ${state.endlessRound} rounds! ${boss.deathMessage}`;
     }
 
+    // Contextual death tip
+    document.getElementById('death-tip').textContent = getDeathTip();
+
     showScreen('death');
+}
+
+function getDeathTip() {
+    const tips = [];
+
+    // Contextual tips based on player state
+    if (state.inventory.potion_hp === 0) {
+        tips.push('💡 Tip: Health Potions from the shop restore 2 HP mid-fight. Stock up before tough battles!');
+    }
+    if (state.inventory.shield_block === 0 && !state.ownedItems.has('shield_block')) {
+        tips.push('💡 Tip: Magic Shields from the shop can block one wrong answer — a lifesaver on hard bosses.');
+    }
+    if (state.inventory.scroll_hint === 0 && combat.hintsRemaining < 99) {
+        tips.push('💡 Tip: Hint Scrolls eliminate a wrong answer. Buy them from the shop for tricky questions.');
+    }
+    if (combat.maxCombo < 3) {
+        tips.push('💡 Tip: Answer 3 in a row for a Combo bonus. 5 in a row = Critical Hit for double damage!');
+    }
+    if (state.equipment.armor === 'basic') {
+        tips.push('💡 Tip: Better armor from the shop gives you more max HP. Chainmail and Plate Armor help you survive longer.');
+    }
+    if (state.equipment.sword === 'basic') {
+        tips.push('💡 Tip: Upgrading your sword at the shop increases critical hit damage. Flame Sword and Frost Blade deal +1 crit damage.');
+    }
+    if ((state.deathsPerStage[combat.bossStage] || 0) >= 2) {
+        tips.push('💡 Tip: Died twice on this boss? You now get unlimited hints! Use them to eliminate wrong answers.');
+    }
+    if (state.inventory.potion_time === 0) {
+        tips.push('💡 Tip: Time Elixirs add +5 seconds to your timer for the whole fight. Great for reading-heavy questions.');
+    }
+    if (combat.wrongAnswers > combat.questionsAnswered * 0.6) {
+        tips.push('💡 Tip: Visit the Codex from the map to review topics. Studying the material helps you answer faster!');
+    }
+
+    // General fallback tips
+    tips.push('💡 Tip: Take your time reading each question carefully. Wrong answers hurt more than slow answers.');
+    tips.push('💡 Tip: Gold carries over between fights. Save up for powerful gear and potions.');
+
+    // Pick one contextual tip (prefer specific ones over general)
+    return tips[0];
 }
 
 // ── Hint System ──

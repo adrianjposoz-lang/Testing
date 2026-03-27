@@ -994,6 +994,18 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   color: var(--gray);
 }
 
+.death-tip {
+  font-size: 9px;
+  color: var(--gold);
+  background: rgba(245, 200, 66, 0.08);
+  border: 1px solid rgba(245, 200, 66, 0.2);
+  padding: 8px 14px;
+  margin: 8px auto;
+  max-width: 400px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 /* =============================================================
    SETTINGS
    ============================================================= */
@@ -2413,6 +2425,12 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
   .death-subtitle {
     font-size: 8px;
+  }
+
+  .death-tip {
+    font-size: 7px;
+    padding: 6px 10px;
+    max-width: 100%;
   }
 
   .victory-content {
