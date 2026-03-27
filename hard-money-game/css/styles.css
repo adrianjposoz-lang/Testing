@@ -255,7 +255,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
    WORLD MAP
    ============================================================= */
 .map-overlay {
-  background: var(--bg-darker);
+  background: transparent;
   justify-content: flex-start;
   padding: 10px;
   gap: 8px;
@@ -276,10 +276,19 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px;
+  padding: 8px 16px;
   width: 100%;
   justify-content: center;
   flex-wrap: wrap;
+  background: rgba(15, 15, 26, 0.85);
+  border-top: 2px solid var(--gold-dark);
+}
+
+.map-overlay .screen-title {
+  background: rgba(15, 15, 26, 0.85);
+  padding: 6px 20px;
+  border-bottom: 2px solid var(--gold-dark);
+  width: 100%;
 }
 
 .gold-display {

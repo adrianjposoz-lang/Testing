@@ -307,10 +307,13 @@ function drawCutsceneScene(ctx, scene, w, h) {
 
 // ── Map ──
 function onMapClick(e) {
-    const mapContainer = document.querySelector('.map-container');
-    const rect = mapContainer.getBoundingClientRect();
+    // Don't process clicks on buttons
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'SPAN') return;
+
+    const canvas = document.getElementById('game-canvas');
+    const rect = canvas.getBoundingClientRect();
     const scaleX = 800 / rect.width;
-    const scaleY = 450 / rect.height;
+    const scaleY = 600 / rect.height;
     const clickX = (e.clientX - rect.left) * scaleX;
     const clickY = (e.clientY - rect.top) * scaleY;
 
