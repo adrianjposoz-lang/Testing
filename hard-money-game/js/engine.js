@@ -861,6 +861,8 @@ export function showScreen(screenName) {
     // Hide combat-specific UI
     document.getElementById('combat-hud').classList.add('hidden');
     document.getElementById('question-panel').classList.add('hidden');
+    // Toggle mobile combat zoom on canvas
+    document.getElementById('game-canvas').classList.toggle('combat-zoom', screenName === 'combat');
     // Hide boss taunt
     const taunt = document.getElementById('boss-taunt');
     if (taunt && screenName !== 'combat') taunt.classList.add('hidden');
