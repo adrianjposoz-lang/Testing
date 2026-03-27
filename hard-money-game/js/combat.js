@@ -419,9 +419,13 @@ function onBossDefeated() {
     document.getElementById('gold-earned').textContent = `+${combat.goldEarned} Gold`;
     document.getElementById('fragment-topic').textContent = boss.topic;
     document.getElementById('fragment-recovered').style.display = state.endlessMode ? 'none' : 'block';
+    // HP remaining display with color coding
+    const hpPct = combat.playerHp / combat.playerMaxHp;
+    const hpColor = hpPct <= 0.3 ? '#ff4444' : hpPct <= 0.6 ? '#ffaa44' : '#66cc66';
     document.getElementById('battle-stats').innerHTML =
         `Questions: ${combat.questionsAnswered - combat.wrongAnswers}/${combat.questionsAnswered} correct<br>` +
         `Best Combo: ${combat.maxCombo}x<br>` +
+        `<span style="color:${hpColor}">HP Remaining: ${combat.playerHp}/${combat.playerMaxHp}</span><br>` +
         (combat.isPerfect ? `<div class="perfect-bonus">PERFECT! +${Math.floor(boss.goldReward * 0.5)} bonus gold!</div>` : '') +
         `<span class="boss-defeat-quote">"${boss.defeat}"</span>`;
 
@@ -505,6 +509,8 @@ export function useHealthPotion() {
     updatePotionButton();
     try { audio.playGoldPickup(); } catch(e) {}
     showComboText('+2 HP', '#22ff44');
+    spawnHealParticles();
+    flashScreen('heal');
 }
 
 // ── UI Updates ──
@@ -603,6 +609,28 @@ function shakeScreen() {
     const container = document.getElementById('game-container');
     container.classList.add('shake');
     setTimeout(() => container.classList.remove('shake'), 400);
+}
+
+// ── Heal Particles ──
+function spawnHealParticles() {
+    const container = document.getElementById('damage-numbers');
+    if (!container) return;
+    const colors = ['#22ff44', '#44ff66', '#88ffaa', '#00dd33', '#66ffcc'];
+    for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'heal-particle';
+        const angle = (i / 15) * Math.PI * 2;
+        const speed = 40 + Math.random() * 60;
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed - 40; // bias upward
+        particle.style.left = '150px';
+        particle.style.top = '330px';
+        particle.style.background = colors[i % colors.length];
+        particle.style.setProperty('--dx', dx + 'px');
+        particle.style.setProperty('--dy', dy + 'px');
+        container.appendChild(particle);
+        setTimeout(() => particle.remove(), 900);
+    }
 }
 
 // ── Boss Intro ──
