@@ -21,6 +21,8 @@ export const SaveSystem = {
                 titles: gameState.titles,
                 deathsPerStage: gameState.deathsPerStage,
                 settings: gameState.settings,
+                persistentHp: gameState.persistentHp,
+                persistentMaxHp: gameState.persistentMaxHp,
                 savedAt: Date.now()
             };
             localStorage.setItem(SAVE_KEY, JSON.stringify(data));

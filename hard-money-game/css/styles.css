@@ -334,6 +334,11 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   font-size: 12px;
 }
 
+.hp-display {
+  color: #66cc66;
+  font-size: 12px;
+}
+
 /* =============================================================
    COMBAT HUD
    ============================================================= */
@@ -565,6 +570,17 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
 .hint-btn:hover { background: rgba(245,200,66,0.1); }
 .hint-btn:disabled { opacity: 0.3; cursor: default; }
+
+.potion-btn {
+  font-size: 9px !important;
+  padding: 6px 12px !important;
+  margin-left: 12px;
+  background: transparent !important;
+  border: 1px solid #44aa44 !important;
+  color: #66cc66 !important;
+}
+.potion-btn:hover { background: rgba(60,180,60,0.15) !important; }
+.potion-btn:disabled { opacity: 0.3; cursor: default; }
 
 .flee-btn {
   font-size: 9px !important;
@@ -1922,6 +1938,12 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .flee-btn {
+    font-size: 7px !important;
+    padding: 6px 8px !important;
+    min-height: 32px;
+  }
+
+  .potion-btn {
     font-size: 7px !important;
     padding: 6px 8px !important;
     min-height: 32px;

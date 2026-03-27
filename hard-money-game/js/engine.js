@@ -27,7 +27,9 @@ export const state = {
     deathsPerStage: {},
     settings: { masterVolume: 0.7, musicVolume: 0.5, sfxVolume: 0.8, skipCutscenes: false, difficulty: 'normal' },
     endlessMode: false,
-    endlessRound: 0
+    endlessRound: 0,
+    persistentHp: 5,
+    persistentMaxHp: 5
 };
 
 // ── Combat State ──
@@ -881,6 +883,7 @@ export function showScreen(screenName) {
         case 'map':
             document.getElementById('map-screen').classList.remove('hidden');
             document.getElementById('map-gold').textContent = `Gold: ${state.gold}`;
+            document.getElementById('map-hp').textContent = `HP: ${state.persistentHp}/${state.persistentMaxHp}`;
             // Show codex badge if there are unviewed entries
             const unviewed = [...state.codexUnlocked].some(s => !state.codexViewed || !state.codexViewed.has(s));
             const badge = document.getElementById('codex-badge');
@@ -953,5 +956,7 @@ export function loadGame() {
     state.titles = data.titles || [];
     state.deathsPerStage = data.deathsPerStage || {};
     state.settings = data.settings || state.settings;
+    state.persistentHp = data.persistentHp || 5;
+    state.persistentMaxHp = data.persistentMaxHp || 5;
     return true;
 }

@@ -12,13 +12,21 @@ export function startFight(stageNum) {
     combat.bossStage = stageNum;
     combat.bossHp = boss.hp;
     combat.bossMaxHp = boss.hp;
-    // Scale player HP: base 5, +1 at stage 5, +1 at stage 8
+    // Scale max HP: base 5, +1 at stage 5, +1 at stage 8
     // Equipment bonuses: plate/golden armor = +1 HP, horned helmet = +1 HP
     const bonusHp = (stageNum >= 8 ? 2 : stageNum >= 5 ? 1 : 0);
     const armorHp = (state.equipment.armor === 'plate' || state.equipment.armor === 'golden') ? 1 : 0;
     const helmetHp = (state.equipment.helmet === 'horned') ? 1 : 0;
-    combat.playerHp = 5 + bonusHp + armorHp + helmetHp;
-    combat.playerMaxHp = 5 + bonusHp + armorHp + helmetHp;
+    const newMaxHp = 5 + bonusHp + armorHp + helmetHp;
+    combat.playerMaxHp = newMaxHp;
+    state.persistentMaxHp = newMaxHp;
+    // Persistent HP: carry over from previous fights, capped at new max
+    if (state.persistentHp <= 0 || state.persistentHp > newMaxHp) {
+        combat.playerHp = newMaxHp;
+    } else {
+        combat.playerHp = state.persistentHp;
+    }
+    state.persistentHp = combat.playerHp;
     combat.combo = 0;
     combat.maxCombo = 0;
     combat.goldEarned = 0;
@@ -78,6 +86,7 @@ export function startFight(stageNum) {
 
     updateHpBars();
     updateHintButton();
+    updatePotionButton();
     showScreen('combat');
 
     try { audio.stopMusic(); audio.playBattleMusic(); } catch(e) {}
@@ -275,6 +284,7 @@ function onCorrectAnswer() {
     anim.slashFrame = 10;
 
     updateHpBars();
+    updatePotionButton();
     document.getElementById('combat-gold').textContent = state.gold;
     spawnDamageNumber(`-${damage}`, 560, 250, 'boss', isCritical);
     spawnHpBarDamage(damage, 'boss', isCritical);
@@ -304,6 +314,7 @@ function onWrongAnswer(q) {
         const rawDmg = BOSS_DATA[combat.bossStage].baseDamage || 1;
         const bossDmg = rawDmg * (combat.baseDamageMultiplier || 1);
         combat.playerHp = Math.max(0, combat.playerHp - bossDmg);
+        state.persistentHp = combat.playerHp;
         try { audio.playHit(); } catch(e) {}
         // Trigger boss attack animation - boss lunges, player flashes
         anim.bossAttack = 12;
@@ -314,6 +325,7 @@ function onWrongAnswer(q) {
     }
 
     updateHpBars();
+    updatePotionButton();
     hideComboCounter();
 
     // Show explanation with CONTINUE button - let player read at their own pace
@@ -361,6 +373,9 @@ function onBossDefeated() {
         audio.playBossDeath();
         setTimeout(() => audio.playVictoryFanfare(), 500);
     } catch(e) {}
+
+    // Sync persistent HP after victory
+    state.persistentHp = combat.playerHp;
 
     const boss = BOSS_DATA[combat.bossStage];
     showBossTaunt(boss.defeat);
@@ -429,6 +444,9 @@ function onPlayerDeath() {
     stopTimer();
     try { audio.stopMusic(); audio.playGameOver(); } catch(e) {}
 
+    // Reset persistent HP on death - player starts fresh
+    state.persistentHp = state.persistentMaxHp;
+
     const boss = BOSS_DATA[combat.bossStage];
     state.deathsPerStage[combat.bossStage] = (state.deathsPerStage[combat.bossStage] || 0) + 1;
 
@@ -481,10 +499,12 @@ export function useHint() {
 export function useHealthPotion() {
     if (state.inventory.potion_hp <= 0 || combat.playerHp >= combat.playerMaxHp) return;
     state.inventory.potion_hp--;
-    combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 1);
+    combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 2);
+    state.persistentHp = combat.playerHp;
     updateHpBars();
+    updatePotionButton();
     try { audio.playGoldPickup(); } catch(e) {}
-    showComboText('+1 HP', '#22ff44');
+    showComboText('+2 HP', '#22ff44');
 }
 
 // ── UI Updates ──
@@ -497,6 +517,22 @@ function updateHpBars() {
     bossFill.classList.toggle('enraged', bossPercent < 30);
     document.getElementById('player-hp-fill').style.width = playerPercent + '%';
     document.getElementById('hp-text').textContent = `${combat.playerHp}/${combat.playerMaxHp}`;
+}
+
+export function updatePotionButton() {
+    const btn = document.getElementById('btn-potion');
+    if (!btn) return;
+    const count = state.inventory.potion_hp || 0;
+    if (count > 0 && combat.playerHp < combat.playerMaxHp) {
+        btn.textContent = `POTION (${count})`;
+        btn.disabled = false;
+    } else if (count > 0) {
+        btn.textContent = `POTION (${count})`;
+        btn.disabled = true; // full HP
+    } else {
+        btn.textContent = 'NO POTIONS';
+        btn.disabled = true;
+    }
 }
 
 function updateHintButton() {

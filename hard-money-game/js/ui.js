@@ -1,6 +1,6 @@
 // UI System - Shop, Map, Cutscenes, Codex, Settings, event wiring
 import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as engineInit } from './engine.js';
-import { startFight, useHint, useHealthPotion, selectAnswer, startEndlessFight, fleeFight } from './combat.js';
+import { startFight, useHint, useHealthPotion, updatePotionButton, selectAnswer, startEndlessFight, fleeFight } from './combat.js';
 import { BOSS_DATA, INTRO_CUTSCENE, ENDING_CUTSCENE, CODEX_ENTRIES } from './cutscenes.js';
 import { SHOP_ITEMS, getRandomQuote } from './shop.js';
 import { drawKnight, drawShopkeeper, drawBoss, drawBackground, drawGoldCoin } from './sprites.js';
@@ -58,6 +58,7 @@ function wireEvents() {
 
     // Combat
     document.getElementById('btn-hint').addEventListener('click', useHint);
+    document.getElementById('btn-potion').addEventListener('click', useHealthPotion);
     document.getElementById('btn-flee').addEventListener('click', onFlee);
     document.getElementById('btn-mute').addEventListener('click', toggleMute);
 
