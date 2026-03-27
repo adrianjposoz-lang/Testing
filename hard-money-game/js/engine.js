@@ -15,7 +15,7 @@ export const state = {
     completedStages: new Set(),
     equipment: { helmet: 'none', armor: 'basic', sword: 'basic', cape: 'none' },
     ownedItems: new Set(['helmet_none', 'armor_basic', 'sword_basic', 'cape_none']),
-    inventory: { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0 },
+    inventory: { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0, gold_charm: 0 },
     codexUnlocked: new Set(),
     totalKills: 0,
     totalCorrect: 0,
@@ -51,7 +51,8 @@ export const combat = {
     questionIndex: 0,
     showingExplanation: false,
     eliminatedIndex: -1,
-    bossStage: 1
+    bossStage: 1,
+    goldMultiplier: 1
 };
 
 // ── Animation State ──
@@ -836,7 +837,19 @@ export function getMapNodePos(stage) {
 }
 
 // ── Screen Management ──
+let lastScreen = '';
 export function showScreen(screenName) {
+    // Screen transition effect for major screen changes
+    const majorScreens = ['map', 'combat', 'shop', 'victory', 'death', 'complete'];
+    if (majorScreens.includes(screenName) && lastScreen !== screenName && lastScreen !== '') {
+        const trans = document.getElementById('screen-transition');
+        if (trans) {
+            trans.classList.add('active');
+            setTimeout(() => trans.classList.remove('active'), 400);
+        }
+    }
+    lastScreen = screenName;
+
     state.screen = screenName;
     // Hide all overlays
     const overlays = document.querySelectorAll('.overlay');
@@ -844,6 +857,9 @@ export function showScreen(screenName) {
     // Hide combat-specific UI
     document.getElementById('combat-hud').classList.add('hidden');
     document.getElementById('question-panel').classList.add('hidden');
+    // Hide boss taunt
+    const taunt = document.getElementById('boss-taunt');
+    if (taunt && screenName !== 'combat') taunt.classList.add('hidden');
 
     switch (screenName) {
         case 'title':

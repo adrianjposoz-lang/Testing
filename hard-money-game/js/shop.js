@@ -31,6 +31,7 @@ export const SHOP_ITEMS = {
         { id: 'potion_time', name: 'Time Elixir', description: '+5 sec timer for 1 fight.', price: 20, slot: 'consumable', consumable: true, effect: 'time', stackable: true },
         { id: 'scroll_hint', name: 'Hint Scroll', description: 'Extra hint for 1 fight.', price: 25, slot: 'consumable', consumable: true, effect: 'hint', stackable: true },
         { id: 'shield_block', name: 'Magic Shield', description: 'Block 1 wrong answer.', price: 35, slot: 'consumable', consumable: true, effect: 'shield', stackable: true },
+        { id: 'gold_charm', name: 'Gold Charm', description: '+25% gold for 1 fight.', price: 40, slot: 'consumable', consumable: true, effect: 'goldboost', stackable: true },
     ]
 };
 

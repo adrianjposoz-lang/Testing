@@ -57,7 +57,7 @@ export const BOSS_DATA = [
     {
         name: 'The Escrow Ogre',
         stage: 5,
-        hp: 6,
+        hp: 7,
         baseDamage: 1,
         goldReward: 60,
         topic: 'Escrow, Closing & Title',
@@ -70,7 +70,7 @@ export const BOSS_DATA = [
     {
         name: 'The LTV Werewolf',
         stage: 6,
-        hp: 6,
+        hp: 7,
         baseDamage: 1,
         goldReward: 65,
         topic: 'LTV Ratios & Calculations',
@@ -83,7 +83,7 @@ export const BOSS_DATA = [
     {
         name: 'The Default Demon',
         stage: 7,
-        hp: 6,
+        hp: 8,
         baseDamage: 1,
         goldReward: 70,
         topic: 'Defaults, Foreclosure Basics & Risk',
@@ -96,8 +96,8 @@ export const BOSS_DATA = [
     {
         name: 'The Underwriting Hydra',
         stage: 8,
-        hp: 7,
-        baseDamage: 1,
+        hp: 9,
+        baseDamage: 2,
         goldReward: 80,
         topic: 'Underwriting & Borrower Evaluation',
         background: 'dungeon',
@@ -109,8 +109,8 @@ export const BOSS_DATA = [
     {
         name: 'The Foreclosure Phoenix',
         stage: 9,
-        hp: 7,
-        baseDamage: 1,
+        hp: 10,
+        baseDamage: 2,
         goldReward: 90,
         topic: 'Foreclosure Process & REO',
         background: 'sky',
@@ -122,8 +122,8 @@ export const BOSS_DATA = [
     {
         name: 'The ARV Dragon',
         stage: 10,
-        hp: 8,
-        baseDamage: 1,
+        hp: 12,
+        baseDamage: 2,
         goldReward: 120,
         topic: 'After Repair Value & Advanced Concepts',
         background: 'castle',

@@ -12,8 +12,10 @@ export function startFight(stageNum) {
     combat.bossStage = stageNum;
     combat.bossHp = boss.hp;
     combat.bossMaxHp = boss.hp;
-    combat.playerHp = 5;
-    combat.playerMaxHp = 5;
+    // Scale player HP: base 5, +1 at stage 5, +1 at stage 8
+    const bonusHp = (stageNum >= 8 ? 2 : stageNum >= 5 ? 1 : 0);
+    combat.playerHp = 5 + bonusHp;
+    combat.playerMaxHp = 5 + bonusHp;
     combat.combo = 0;
     combat.maxCombo = 0;
     combat.goldEarned = 0;
@@ -21,6 +23,7 @@ export function startFight(stageNum) {
     combat.hintsRemaining = 1;
     combat.shieldsRemaining = state.inventory.shield_block > 0 ? 1 : 0;
     combat.bonusTime = state.inventory.potion_time > 0 ? 5 : 0;
+    combat.goldMultiplier = state.inventory.gold_charm > 0 ? 1.25 : 1;
     combat.isAnswering = false;
     combat.showingExplanation = false;
     combat.eliminatedIndex = -1;
@@ -39,6 +42,7 @@ export function startFight(stageNum) {
     // Consume consumables used
     if (combat.shieldsRemaining > 0) state.inventory.shield_block--;
     if (combat.bonusTime > 0) state.inventory.potion_time--;
+    if (combat.goldMultiplier > 1) state.inventory.gold_charm--;
 
     // Update HUD
     const bossNameEl = document.getElementById('boss-name');
@@ -53,8 +57,11 @@ export function startFight(stageNum) {
 
     try { audio.stopMusic(); audio.playBattleMusic(); } catch(e) {}
 
-    // Small delay then show first question
-    setTimeout(() => nextQuestion(), 800);
+    // Show boss taunt
+    showBossTaunt(boss.taunt);
+
+    // Delay first question so player reads the taunt
+    setTimeout(() => nextQuestion(), 2000);
 }
 
 // ── Next Question ──
@@ -209,6 +216,9 @@ function onCorrectAnswer() {
         try { audio.playSlash(); setTimeout(() => audio.playGoldPickup(), 150); } catch(e) {}
     }
 
+    // Apply gold multiplier
+    goldGain = Math.floor(goldGain * (combat.goldMultiplier || 1));
+
     // Deal damage to boss
     combat.bossHp = Math.max(0, combat.bossHp - damage);
     combat.goldEarned += goldGain;
@@ -229,7 +239,9 @@ function onCorrectAnswer() {
 
     // Check boss death
     if (combat.bossHp <= 0) {
-        setTimeout(() => onBossDefeated(), 600);
+        spawnBossParticles();
+        shakeScreen();
+        setTimeout(() => onBossDefeated(), 1000);
     } else {
         setTimeout(() => nextQuestion(), 1200);
     }
@@ -245,12 +257,13 @@ function onWrongAnswer(q) {
         showComboText('SHIELD BLOCKED!', '#4488ff');
         try { audio.playMenuSelect(); } catch(e) {}
     } else {
-        combat.playerHp = Math.max(0, combat.playerHp - 1);
+        const bossDmg = BOSS_DATA[combat.bossStage].baseDamage || 1;
+        combat.playerHp = Math.max(0, combat.playerHp - bossDmg);
         try { audio.playHit(); } catch(e) {}
         // Trigger boss attack animation - boss lunges, player flashes
         anim.bossAttack = 12;
         anim.playerHit = 18;
-        spawnDamageNumber('-1', 150, 330, 'player', false);
+        spawnDamageNumber(`-${bossDmg}`, 150, 330, 'player', false);
         flashScreen('red');
     }
 
@@ -304,6 +317,7 @@ function onBossDefeated() {
     } catch(e) {}
 
     const boss = BOSS_DATA[combat.bossStage];
+    showBossTaunt(boss.defeat);
     const bonusGold = boss.goldReward;
     state.gold += bonusGold;
     combat.goldEarned += bonusGold;
@@ -460,6 +474,40 @@ function shakeScreen() {
     const container = document.getElementById('game-container');
     container.classList.add('shake');
     setTimeout(() => container.classList.remove('shake'), 400);
+}
+
+// ── Boss Taunts ──
+function showBossTaunt(text) {
+    const tauntEl = document.getElementById('boss-taunt');
+    if (!tauntEl) return;
+    tauntEl.textContent = `"${text}"`;
+    tauntEl.classList.remove('hidden');
+    tauntEl.classList.remove('taunt-fade');
+    void tauntEl.offsetWidth;
+    tauntEl.classList.add('taunt-fade');
+    setTimeout(() => tauntEl.classList.add('hidden'), 3000);
+}
+
+// Boss defeat particle explosion
+export function spawnBossParticles() {
+    const container = document.getElementById('damage-numbers');
+    if (!container) return;
+    const colors = ['#ff4444', '#ffaa00', '#ffdd00', '#ff6600', '#ffffff'];
+    for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'boss-particle';
+        const angle = (i / 20) * Math.PI * 2;
+        const speed = 60 + Math.random() * 80;
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed;
+        particle.style.left = '560px';
+        particle.style.top = '280px';
+        particle.style.background = colors[i % colors.length];
+        particle.style.setProperty('--dx', dx + 'px');
+        particle.style.setProperty('--dy', dy + 'px');
+        container.appendChild(particle);
+        setTimeout(() => particle.remove(), 800);
+    }
 }
 
 // ── Utilities ──

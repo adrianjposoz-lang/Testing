@@ -336,7 +336,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
 .hp-fill {
   height: 100%;
-  transition: width 0.3s ease;
+  transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .boss-fill { background: linear-gradient(180deg, var(--red) 40%, #a93226 100%); }
@@ -1104,4 +1104,113 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   .game-title { font-size: 14px; }
   .question-text { font-size: 8px; }
   .answer-btn { font-size: 8px; padding: 8px 6px; }
+}
+
+/* =============================================================
+   SCREEN TRANSITIONS
+   ============================================================= */
+.screen-transition {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  transition: opacity 0.2s ease;
+}
+.screen-transition.active {
+  opacity: 1;
+  animation: screenFade 0.4s ease;
+}
+@keyframes screenFade {
+  0% { opacity: 0; }
+  40% { opacity: 1; }
+  60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* =============================================================
+   BOSS TAUNT BAR
+   ============================================================= */
+.boss-taunt {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  padding: 8px 16px;
+  max-width: 500px;
+  text-align: center;
+  z-index: 60;
+  line-height: 1.5;
+  box-shadow: 0 0 15px rgba(200,0,0,0.3);
+}
+.taunt-fade {
+  animation: tauntFadeAnim 3s ease forwards;
+}
+@keyframes tauntFadeAnim {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* =============================================================
+   BOSS DEATH PARTICLES
+   ============================================================= */
+.boss-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  z-index: 50;
+  pointer-events: none;
+  animation: particleExplode 0.8s ease-out forwards;
+}
+@keyframes particleExplode {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* =============================================================
+   SHOPKEEPER PORTRAIT
+   ============================================================= */
+.shopkeeper-speech {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+  margin-top: 8px;
+}
+#shopkeeper-canvas {
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+.shopkeeper-quote {
+  font-size: 9px;
+  color: var(--gold);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* =============================================================
+   RETURN TO MAP BUTTON
+   ============================================================= */
+.btn-return-map {
+  margin-top: 8px;
+  background: transparent !important;
+  border-color: var(--gold-dark) !important;
+  font-size: 9px !important;
 }

@@ -3,7 +3,7 @@ import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as e
 import { startFight, useHint, useHealthPotion, selectAnswer, startEndlessFight, fleeFight } from './combat.js';
 import { BOSS_DATA, INTRO_CUTSCENE, ENDING_CUTSCENE, CODEX_ENTRIES } from './cutscenes.js';
 import { SHOP_ITEMS, getRandomQuote } from './shop.js';
-import { drawKnight, drawShopkeeper, drawBoss, drawBackground } from './sprites.js';
+import { drawKnight, drawShopkeeper, drawBoss, drawBackground, drawGoldCoin } from './sprites.js';
 import { audio } from './audio.js';
 import { SaveSystem } from './save.js';
 
@@ -52,6 +52,7 @@ function wireEvents() {
 
     // Victory
     document.getElementById('btn-victory-continue').addEventListener('click', onVictoryContinue);
+    document.getElementById('btn-return-map').addEventListener('click', onReturnToMap);
 
     // Death
     document.getElementById('btn-retry').addEventListener('click', onRetry);
@@ -815,6 +816,13 @@ function onRetry() {
     }
 }
 
+// ── Return to Map ──
+function onReturnToMap() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    showScreen('map');
+    try { audio.playMapMusic(); } catch(e) {}
+}
+
 // ── Flee ──
 function onFlee() {
     fleeFight();
@@ -837,6 +845,15 @@ function openShop() {
     showScreen('shop');
     switchShopTab('weapons');
     startShopPreview();
+    drawShopkeeperPortrait();
+}
+
+function drawShopkeeperPortrait() {
+    const canvas = document.getElementById('shopkeeper-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 80, 80);
+    drawShopkeeper(ctx, 15, 10, 2.5, 0);
 }
 
 function leaveShop() {
@@ -1103,7 +1120,7 @@ function executeReset() {
     state.completedStages = new Set();
     state.equipment = { helmet: 'none', armor: 'basic', sword: 'basic', cape: 'none' };
     state.ownedItems = new Set(['helmet_none', 'armor_basic', 'sword_basic', 'cape_none']);
-    state.inventory = { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0 };
+    state.inventory = { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0, gold_charm: 0 };
     state.codexUnlocked = new Set();
     state.totalKills = 0;
     state.totalCorrect = 0;

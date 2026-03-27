@@ -106,8 +106,14 @@
             </div>
         </div>
 
+        <!-- Boss taunt bar -->
+        <div id="boss-taunt" class="boss-taunt hidden"></div>
+
         <!-- Floating damage numbers container -->
         <div id="damage-numbers"></div>
+
+        <!-- Screen transition overlay -->
+        <div id="screen-transition" class="screen-transition"></div>
 
         <!-- Shop Overlay -->
         <div id="shop-screen" class="overlay shop-overlay hidden">
@@ -126,7 +132,10 @@
                         <button class="shop-tab" data-tab="consumables">ITEMS</button>
                     </div>
                     <div class="shop-grid" id="shop-grid"></div>
-                    <div class="shopkeeper-quote" id="shopkeeper-quote">"Welcome, Debt Knight!"</div>
+                    <div class="shopkeeper-speech">
+                        <canvas id="shopkeeper-canvas" width="80" height="80"></canvas>
+                        <div class="shopkeeper-quote" id="shopkeeper-quote">"Welcome, Debt Knight!"</div>
+                    </div>
                 </div>
             </div>
             <div class="shop-footer">
@@ -156,6 +165,7 @@
                 <div class="battle-stats" id="battle-stats"></div>
             </div>
             <button class="pixel-btn" id="btn-victory-continue">CONTINUE</button>
+            <button class="pixel-btn btn-return-map" id="btn-return-map">RETURN TO MAP</button>
         </div>
 
         <!-- Death Screen -->
