@@ -333,14 +333,22 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
 .map-footer {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: 4px;
+  padding: 6px 16px;
   width: 100%;
-  justify-content: center;
-  flex-wrap: wrap;
   background: rgba(15, 15, 26, 0.85);
   border-top: 2px solid var(--gold-dark);
+}
+
+.map-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .map-overlay .screen-title {
@@ -1772,9 +1780,13 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
   /* --- Map footer --- */
   .map-footer {
-    gap: 8px;
+    gap: 4px;
     padding: 6px 10px;
     font-size: 10px;
+  }
+
+  .map-footer-row {
+    gap: 8px;
   }
 
   .gold-display {
@@ -2087,16 +2099,20 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
   /* --- Map footer: compact layout --- */
   .map-footer {
-    gap: 6px;
-    padding: 5px 6px;
+    gap: 3px;
+    padding: 4px 6px;
     font-size: 8px;
-    justify-content: space-around;
+  }
+
+  .map-footer-row {
+    gap: 6px;
+    justify-content: center;
   }
 
   .map-footer .pixel-btn {
     font-size: 6px;
-    padding: 5px 6px;
-    min-height: 36px;
+    padding: 4px 6px;
+    min-height: 30px;
     width: auto;
     max-width: none;
   }
