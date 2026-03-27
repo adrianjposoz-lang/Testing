@@ -732,6 +732,72 @@ function onVictoryContinue() {
 
 function showComplete() {
     document.getElementById('complete-name').textContent = state.playerName;
+
+    // Draw trophy on canvas
+    const tc = document.getElementById('trophy-canvas');
+    if (tc) {
+        const t = tc.getContext('2d');
+        t.clearRect(0, 0, 120, 120);
+        // Glow
+        t.fillStyle = 'rgba(255,200,44,0.15)';
+        t.beginPath();
+        t.arc(60, 55, 50, 0, Math.PI * 2);
+        t.fill();
+        // Trophy base
+        t.fillStyle = '#8a6a2a';
+        t.fillRect(40, 90, 40, 8);
+        t.fillRect(46, 82, 28, 10);
+        // Trophy stem
+        t.fillStyle = '#aa8833';
+        t.fillRect(54, 60, 12, 24);
+        // Trophy cup
+        t.fillStyle = '#ffcc44';
+        t.beginPath();
+        t.moveTo(30, 20);
+        t.lineTo(30, 50);
+        t.quadraticCurveTo(30, 65, 60, 65);
+        t.quadraticCurveTo(90, 65, 90, 50);
+        t.lineTo(90, 20);
+        t.closePath();
+        t.fill();
+        // Cup shine
+        t.fillStyle = '#ffe888';
+        t.beginPath();
+        t.moveTo(38, 24);
+        t.lineTo(38, 45);
+        t.quadraticCurveTo(38, 55, 50, 58);
+        t.lineTo(50, 24);
+        t.closePath();
+        t.fill();
+        // Handles
+        t.strokeStyle = '#ffcc44';
+        t.lineWidth = 5;
+        t.beginPath();
+        t.arc(25, 38, 10, -Math.PI * 0.5, Math.PI * 0.5);
+        t.stroke();
+        t.beginPath();
+        t.arc(95, 38, 10, Math.PI * 0.5, -Math.PI * 0.5);
+        t.stroke();
+        // Star on cup
+        t.fillStyle = '#aa8833';
+        t.font = '18px "Press Start 2P", monospace';
+        t.textAlign = 'center';
+        t.textBaseline = 'middle';
+        t.fillText('★', 60, 42);
+    }
+
+    // Victory stats
+    const statsDiv = document.getElementById('victory-stats');
+    if (statsDiv) {
+        const accuracy = Math.round(state.totalCorrect / Math.max(1, state.totalAnswered) * 100);
+        statsDiv.innerHTML = `
+            <p>Bosses Slain: <span class="stat-value">${state.totalKills}</span></p>
+            <p>Accuracy: <span class="stat-value">${accuracy}%</span></p>
+            <p>Best Combo: <span class="stat-value">${state.bestCombo}x</span></p>
+            <p>Gold Earned: <span class="stat-value">${state.gold}</span></p>
+        `;
+    }
+
     showScreen('complete');
 }
 
