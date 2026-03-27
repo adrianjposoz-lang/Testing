@@ -883,7 +883,20 @@ export function showScreen(screenName) {
         case 'map':
             document.getElementById('map-screen').classList.remove('hidden');
             document.getElementById('map-gold').textContent = `Gold: ${state.gold}`;
-            document.getElementById('map-hp').textContent = `HP: ${state.persistentHp}/${state.persistentMaxHp}`;
+            const mapHpEl = document.getElementById('map-hp');
+            mapHpEl.textContent = `HP: ${state.persistentHp}/${state.persistentMaxHp}`;
+            const hpPercent = state.persistentHp / state.persistentMaxHp;
+            mapHpEl.style.color = hpPercent <= 0.3 ? '#ff4444' : hpPercent <= 0.6 ? '#ffaa44' : '#66cc66';
+            // Low HP warning
+            const hpWarn = document.getElementById('hp-warning');
+            if (hpWarn) {
+                if (hpPercent <= 0.5 && state.persistentHp < state.persistentMaxHp) {
+                    hpWarn.textContent = hpPercent <= 0.3 ? '⚠️ CRITICAL HP — Visit the shop for potions!' : '⚠️ Low HP — Consider buying potions.';
+                    hpWarn.classList.remove('hidden');
+                } else {
+                    hpWarn.classList.add('hidden');
+                }
+            }
             // Show codex badge if there are unviewed entries
             const unviewed = [...state.codexUnlocked].some(s => !state.codexViewed || !state.codexViewed.has(s));
             const badge = document.getElementById('codex-badge');

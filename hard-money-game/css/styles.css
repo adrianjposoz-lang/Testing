@@ -310,6 +310,23 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   height: 100%;
 }
 
+.hp-warning {
+  text-align: center;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: #ff6644;
+  background: rgba(255, 50, 0, 0.12);
+  border: 1px solid rgba(255, 80, 30, 0.3);
+  padding: 4px 12px;
+  width: 100%;
+  animation: pulse-warning 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .map-footer {
   display: flex;
   align-items: center;
