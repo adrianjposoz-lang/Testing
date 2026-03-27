@@ -1703,17 +1703,29 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     overflow-y: auto;
   }
 
-  /* --- Game container: full width, no border on tiny screens --- */
+  /* --- Game container: full width, fill viewport on mobile --- */
   #game-container {
     max-width: 100%;
     border: none;
     box-shadow: none;
+    aspect-ratio: unset;
+    height: 100vh;
+    height: 100dvh;
   }
 
-  /* --- Overlays --- */
+  #game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+  }
+
+  /* --- Overlays: fill full mobile viewport --- */
   .overlay {
     padding: 10px 8px;
     overflow-y: auto;
+    height: 100%;
   }
 
   /* --- Title screen --- */
@@ -1779,26 +1791,27 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     font-size: 10px;
   }
 
-  /* --- Combat HUD: compact everything --- */
+  /* --- Combat HUD: repositioned for tall mobile viewport --- */
   .hud {
-    padding: 4px 6px;
+    padding: 4px 8px;
+    height: 45%;
   }
 
   .boss-hp-bar {
-    width: 140px;
+    width: 55vw;
     height: 12px;
   }
 
   .boss-name {
-    font-size: 8px;
+    font-size: 7px;
   }
 
   .stage-indicator {
-    font-size: 8px;
+    font-size: 7px;
   }
 
   .hp-bar {
-    width: 100px;
+    width: 30vw;
     height: 12px;
   }
 
@@ -1811,7 +1824,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .timer-bar {
-    width: 80px;
+    width: 22vw;
     height: 10px;
   }
 
@@ -1820,41 +1833,61 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .timer-container {
-    bottom: 100px;
-    right: 6px;
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
     gap: 4px;
   }
 
   .hud-bottom-left {
-    bottom: 100px;
-    left: 6px;
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
   }
 
   .gold-counter {
-    font-size: 9px;
+    font-size: 8px;
     top: 28px;
-    right: 6px;
+    right: 8px;
   }
 
   .combo-counter {
-    font-size: 14px;
+    font-size: 12px;
+    top: 30%;
   }
 
-  /* --- Question panel: stacked answers --- */
+  /* --- Question panel: fills bottom 55% of screen --- */
   .question-panel {
-    padding: 8px;
+    position: absolute;
+    top: 45%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 12px;
     gap: 6px;
+    overflow-y: auto;
+    border-top: 2px solid var(--gold-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .question-topic {
+    font-size: 6px;
+    margin-bottom: 2px;
   }
 
   .question-text {
-    font-size: 8px;
+    font-size: 9px;
     line-height: 1.5;
+    margin-bottom: 4px;
   }
 
   .answers-container {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
+    flex-shrink: 0;
   }
 
   .answer-btn {
@@ -1863,20 +1896,27 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     min-width: unset;
     min-height: 44px;
     font-size: 8px;
-    padding: 10px 8px;
+    padding: 10px 12px;
     text-align: left;
+  }
+
+  .hint-container {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
   .hint-btn {
     font-size: 8px;
     padding: 8px 12px;
-    min-height: 44px;
+    min-height: 40px;
   }
 
   .flee-btn {
     font-size: 8px !important;
     padding: 8px 10px !important;
-    min-height: 44px;
+    min-height: 40px;
   }
 
   .explanation {
@@ -1885,6 +1925,12 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     gap: 8px;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* Boss taunt needs to sit in the canvas area */
+  .boss-taunt {
+    top: 35% !important;
+    font-size: 7px !important;
   }
 
   .explanation-continue {
