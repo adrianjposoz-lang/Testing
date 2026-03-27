@@ -174,28 +174,47 @@ export const audio = (() => {
   function playHit() {
     ensureCtx();
     const t = ctx.currentTime;
-    // Low thud
-    const g = gain(0.5, sfxGain);
-    g.gain.setValueAtTime(0.5, t);
-    g.gain.linearRampToValueAtTime(0, t + 0.2);
 
-    const o = osc('sine', 120, g);
-    o.frequency.exponentialRampToValueAtTime(40, t + 0.2);
-    o.start(t);
-    o.stop(t + 0.2);
+    // Heavy impact thud - deep bass hit
+    const g1 = gain(0.6, sfxGain);
+    g1.gain.setValueAtTime(0.6, t);
+    g1.gain.linearRampToValueAtTime(0, t + 0.35);
+    const o1 = osc('sine', 80, g1);
+    o1.frequency.exponentialRampToValueAtTime(25, t + 0.35);
+    o1.start(t);
+    o1.stop(t + 0.35);
 
-    // Noise punch
-    const ng = gain(0.25, sfxGain);
-    ng.gain.linearRampToValueAtTime(0, t + 0.08);
+    // Crunch noise - the impact texture
+    const ng = gain(0.4, sfxGain);
+    ng.gain.setValueAtTime(0.4, t);
+    ng.gain.linearRampToValueAtTime(0, t + 0.15);
+    const crunchFilter = ctx.createBiquadFilter();
+    crunchFilter.type = 'bandpass';
+    crunchFilter.frequency.setValueAtTime(800, t);
+    crunchFilter.frequency.exponentialRampToValueAtTime(200, t + 0.15);
+    crunchFilter.Q.setValueAtTime(3, t);
+    crunchFilter.connect(ng);
+    const n1 = noise(0.15, crunchFilter);
+    n1.start(t);
+    n1.stop(t + 0.15);
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(600, t);
-    filter.connect(ng);
+    // Descending pain tone - makes it feel like damage
+    const g2 = gain(0.3, sfxGain);
+    g2.gain.setValueAtTime(0.3, t + 0.05);
+    g2.gain.linearRampToValueAtTime(0, t + 0.4);
+    const o2 = osc('sawtooth', 300, g2);
+    o2.frequency.exponentialRampToValueAtTime(80, t + 0.4);
+    o2.start(t + 0.05);
+    o2.stop(t + 0.4);
 
-    const n = noise(0.08, filter);
-    n.start(t);
-    n.stop(t + 0.08);
+    // Secondary rumble hit
+    const g3 = gain(0.25, sfxGain);
+    g3.gain.setValueAtTime(0.25, t + 0.08);
+    g3.gain.linearRampToValueAtTime(0, t + 0.25);
+    const o3 = osc('triangle', 55, g3);
+    o3.frequency.exponentialRampToValueAtTime(30, t + 0.25);
+    o3.start(t + 0.08);
+    o3.stop(t + 0.25);
   }
 
   function playCritical() {
