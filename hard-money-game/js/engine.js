@@ -992,7 +992,7 @@ export function loadGame() {
     state.titles = data.titles || [];
     state.deathsPerStage = data.deathsPerStage || {};
     state.settings = data.settings || state.settings;
-    state.persistentHp = data.persistentHp || 5;
-    state.persistentMaxHp = data.persistentMaxHp || 5;
+    state.persistentHp = data.persistentHp ?? 5;
+    state.persistentMaxHp = data.persistentMaxHp ?? 5;
     return true;
 }

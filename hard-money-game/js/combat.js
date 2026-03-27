@@ -408,7 +408,7 @@ function onBossDefeated() {
             state.currentStage++;
         }
     } else {
-        state.endlessRound++;
+        // endlessRound is already incremented in startEndlessFight()
         if (state.endlessRound > state.endlessHighScore) {
             state.endlessHighScore = state.endlessRound;
         }

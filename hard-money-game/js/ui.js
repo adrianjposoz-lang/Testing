@@ -892,6 +892,15 @@ function drawShopkeeperPortrait() {
 function leaveShop() {
     try { audio.stopMusic(); audio.playMenuSelect(); audio.playMapMusic(); } catch(e) {}
     stopShopPreview();
+    // Recalculate maxHp based on current equipment
+    const stage = state.currentStage;
+    const bonusHp = (stage >= 8 ? 2 : stage >= 5 ? 1 : 0);
+    const armorHp = (state.equipment.armor === 'plate' || state.equipment.armor === 'golden') ? 1 : 0;
+    const helmetHp = (state.equipment.helmet === 'horned') ? 1 : 0;
+    state.persistentMaxHp = 5 + bonusHp + armorHp + helmetHp;
+    if (state.persistentHp > state.persistentMaxHp) {
+        state.persistentHp = state.persistentMaxHp;
+    }
     saveGame();
     showScreen('map');
     document.getElementById('map-gold').textContent = `Gold: ${state.gold}`;
