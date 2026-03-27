@@ -1037,5 +1037,7 @@ export function loadGame() {
     state.skills = data.skills || {};
     state.lastEventStage = data.lastEventStage || 0;
     state.completedDeals = data.completedDeals || [];
+    state.endlessMode = data.endlessMode || false;
+    state.endlessRound = data.endlessRound || 0;
     return true;
 }
