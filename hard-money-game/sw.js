@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ledger-sword-v2';
+const CACHE_NAME = 'ledger-sword-v3';
 const ASSETS = [
     './',
     './index.html',
@@ -13,7 +13,10 @@ const ASSETS = [
     './js/questions.js',
     './js/shop.js',
     './js/save.js',
-    './manifest.json'
+    './js/events.js',
+    './js/deals.js',
+    './manifest.json',
+    './icons/icon.svg'
 ];
 
 self.addEventListener('install', event => {

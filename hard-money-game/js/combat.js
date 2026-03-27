@@ -72,6 +72,7 @@ export function startFight(stageNum) {
     if (hasSkill('treasure_hunter')) combat.goldMultiplier += 0.15;
     if (hasSkill('golden_touch')) combat.goldMultiplier += 0.25;
     combat.xpEarned = 0;
+    combat.mechanicState = combat.mechanicState || {};
     combat.mechanicState.firstWrongProtected = hasSkill('battle_hardened');
     combat.mechanicState.phoenixUsed = false;
 
@@ -213,8 +214,9 @@ export function nextQuestion() {
                 btns.forEach((btn, i) => {
                     btn.textContent = data[i].text;
                     btn.dataset.index = data[i].index;
-                    // Replace click handler
-                    const newBtn = btn.cloneNode(true);
+                    // Replace click handler - use cloneNode(false) to strip old handlers
+                    const newBtn = btn.cloneNode(false);
+                    newBtn.textContent = data[i].text;
                     newBtn.addEventListener('click', () => selectAnswer(data[i].index));
                     btn.parentNode.replaceChild(newBtn, btn);
                 });
@@ -476,7 +478,7 @@ function onWrongAnswer(q, selectedAnswer) {
     if (wrongMech) {
         if (wrongMech.type === 'greedy_grab') {
             const stolenGold = Math.min(5, state.gold);
-            state.gold = Math.max(0, state.gold - 5);
+            state.gold = Math.max(0, state.gold - stolenGold);
             document.getElementById('combat-gold').textContent = state.gold;
             if (stolenGold > 0) {
                 spawnGoldNumber(`-${stolenGold}`);
@@ -540,7 +542,7 @@ function onWrongAnswer(q, selectedAnswer) {
         try { audio.playMenuSelect(); } catch(e) {}
     } else {
         const rawDmg = BOSS_DATA[combat.bossStage].baseDamage || 1;
-        const bossDmg = rawDmg * (combat.baseDamageMultiplier || 1);
+        const bossDmg = Math.round(rawDmg * (combat.baseDamageMultiplier || 1));
         combat.playerHp = Math.max(0, combat.playerHp - bossDmg);
         state.persistentHp = combat.playerHp;
         try { audio.playHit(); } catch(e) {}

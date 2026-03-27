@@ -1018,10 +1018,9 @@ export function loadGame() {
     state.completedStages = new Set(data.completedStages || []);
     state.equipment = data.equipment || { helmet: 'none', armor: 'basic', sword: 'basic', cape: 'none' };
     state.ownedItems = new Set(data.ownedItems || ['helmet_none', 'armor_basic', 'sword_basic', 'cape_none']);
-    state.inventory = data.inventory || { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0 };
+    state.inventory = data.inventory || { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0, gold_charm: 0 };
     state.codexUnlocked = new Set(data.codexUnlocked || []);
     state.codexViewed = new Set(data.codexViewed || []);
-    if (state.inventory.gold_charm === undefined) state.inventory.gold_charm = 0;
     state.totalKills = data.totalKills || 0;
     state.totalCorrect = data.totalCorrect || 0;
     state.totalAnswered = data.totalAnswered || 0;
