@@ -450,35 +450,75 @@ function renderShopGrid(tab) {
 }
 
 function onShopItemClick(item) {
-    if (item.consumable) {
-        // Buy consumable
-        if (state.gold < item.price) {
-            document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('tooExpensive')}"`;
-            return;
-        }
-        state.gold -= item.price;
-        state.inventory[item.id] = (state.inventory[item.id] || 0) + 1;
-        try { audio.playPurchase(); } catch(e) {}
-        document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('purchase')}"`;
-    } else if (state.ownedItems.has(item.id)) {
-        // Equip owned item
+    // Equip already-owned item (no confirmation needed)
+    if (!item.consumable && state.ownedItems.has(item.id)) {
         state.equipment[item.slot] = item.value;
         try { audio.playMenuSelect(); } catch(e) {}
-    } else {
-        // Buy new item
-        if (state.gold < item.price) {
-            document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('tooExpensive')}"`;
-            return;
-        }
-        state.gold -= item.price;
-        state.ownedItems.add(item.id);
-        state.equipment[item.slot] = item.value;
-        try { audio.playPurchase(); } catch(e) {}
-        document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('purchase')}"`;
+        document.getElementById('shop-gold').textContent = `Gold: ${state.gold}`;
+        const activeTab = document.querySelector('.shop-tab.active').dataset.tab;
+        renderShopGrid(activeTab);
+        return;
     }
 
+    // Check if can afford
+    if (state.gold < item.price) {
+        document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('tooExpensive')}"`;
+        return;
+    }
+
+    // Show confirmation dialog
+    showPurchaseConfirm(item);
+}
+
+function showPurchaseConfirm(item) {
+    // Remove any existing confirm dialog
+    const existing = document.getElementById('purchase-confirm');
+    if (existing) existing.remove();
+
+    const dialog = document.createElement('div');
+    dialog.id = 'purchase-confirm';
+    dialog.className = 'purchase-confirm-overlay';
+    dialog.innerHTML = `
+        <div class="purchase-confirm-box">
+            <p class="confirm-title">CONFIRM PURCHASE</p>
+            <p class="confirm-item">${item.name}</p>
+            <p class="confirm-price">${item.price} Gold</p>
+            <p class="confirm-desc">${item.description}</p>
+            <div class="confirm-buttons">
+                <button class="pixel-btn confirm-yes">BUY</button>
+                <button class="pixel-btn confirm-no">CANCEL</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('shop-screen').appendChild(dialog);
+
+    dialog.querySelector('.confirm-yes').addEventListener('click', () => {
+        dialog.remove();
+        confirmPurchase(item);
+    });
+
+    dialog.querySelector('.confirm-no').addEventListener('click', () => {
+        dialog.remove();
+        try { audio.playMenuSelect(); } catch(e) {}
+    });
+}
+
+function confirmPurchase(item) {
+    if (state.gold < item.price) return;
+
+    state.gold -= item.price;
+
+    if (item.consumable) {
+        state.inventory[item.id] = (state.inventory[item.id] || 0) + 1;
+    } else {
+        state.ownedItems.add(item.id);
+        state.equipment[item.slot] = item.value;
+    }
+
+    try { audio.playPurchase(); } catch(e) {}
+    document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('purchase')}"`;
     document.getElementById('shop-gold').textContent = `Gold: ${state.gold}`;
-    // Re-render current tab
     const activeTab = document.querySelector('.shop-tab.active').dataset.tab;
     renderShopGrid(activeTab);
     saveGame();
