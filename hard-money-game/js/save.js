@@ -28,6 +28,7 @@ export const SaveSystem = {
                 xp: gameState.xp,
                 totalXp: gameState.totalXp,
                 skills: gameState.skills,
+                completedDeals: gameState.completedDeals,
                 savedAt: Date.now()
             };
             localStorage.setItem(SAVE_KEY, JSON.stringify(data));

@@ -35,7 +35,8 @@ export const state = {
     xp: 0,
     totalXp: 0,
     skills: {},
-    lastEventStage: 0
+    lastEventStage: 0,
+    completedDeals: []
 };
 
 // ── Combat State ──
@@ -877,7 +878,7 @@ export function getMapNodePos(stage) {
 let lastScreen = '';
 export function showScreen(screenName) {
     // Screen transition effect for major screen changes
-    const majorScreens = ['map', 'combat', 'shop', 'victory', 'death', 'complete', 'event'];
+    const majorScreens = ['map', 'combat', 'shop', 'victory', 'death', 'complete', 'event', 'deals'];
     if (majorScreens.includes(screenName) && lastScreen !== screenName && lastScreen !== '') {
         const trans = document.getElementById('screen-transition');
         if (trans) {
@@ -985,6 +986,9 @@ export function showScreen(screenName) {
         case 'event':
             document.getElementById('event-screen').classList.remove('hidden');
             break;
+        case 'deals':
+            document.getElementById('deals-screen').classList.remove('hidden');
+            break;
     }
 }
 
@@ -999,7 +1003,8 @@ export function saveGame() {
         xp: state.xp,
         totalXp: state.totalXp,
         skills: state.skills,
-        lastEventStage: state.lastEventStage
+        lastEventStage: state.lastEventStage,
+        completedDeals: state.completedDeals
     };
     SaveSystem.save(data);
 }
@@ -1032,5 +1037,6 @@ export function loadGame() {
     state.totalXp = data.totalXp || 0;
     state.skills = data.skills || {};
     state.lastEventStage = data.lastEventStage || 0;
+    state.completedDeals = data.completedDeals || [];
     return true;
 }

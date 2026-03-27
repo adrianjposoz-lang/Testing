@@ -8,6 +8,7 @@ import { drawKnight, drawShopkeeper, drawBoss, drawBackground, drawGoldCoin } fr
 import { audio } from './audio.js';
 import { SaveSystem } from './save.js';
 import { MAP_EVENTS } from './events.js';
+import { DEAL_SCENARIOS } from './deals.js';
 
 let cutsceneQueue = [];
 let cutsceneIndex = 0;
@@ -63,6 +64,11 @@ function wireEvents() {
 
     // Map Events
     document.getElementById('btn-event-continue').addEventListener('click', onEventContinue);
+
+    // Deal Simulator
+    document.getElementById('btn-deals').addEventListener('click', openDealSimulator);
+    document.getElementById('btn-close-deals').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
+    document.getElementById('btn-deal-next').addEventListener('click', onDealNext);
 
     // Map node clicks - use canvas click
     document.getElementById('map-screen').addEventListener('click', onMapClick);
@@ -1963,4 +1969,180 @@ function renderSkillTree() {
         branchEl.appendChild(skillsRow);
         container.appendChild(branchEl);
     }
+}
+
+// ── Deal Simulator ──
+let currentDeal = null;
+let dealQuestionIndex = 0;
+let dealScore = 0;
+let dealTotal = 0;
+let dealAnswered = false;
+
+function openDealSimulator() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    showScreen('deals');
+    const list = document.getElementById('deals-list');
+    const active = document.getElementById('deal-active');
+    const summary = document.getElementById('deal-summary');
+    list.classList.remove('hidden');
+    active.classList.add('hidden');
+    summary.classList.add('hidden');
+    list.innerHTML = '';
+
+    DEAL_SCENARIOS.forEach(deal => {
+        const completed = state.completedDeals.includes(deal.id);
+        const card = document.createElement('div');
+        card.className = `deal-card${completed ? ' completed' : ''}`;
+        card.innerHTML = `
+            <span class="deal-difficulty ${deal.difficulty}">${deal.difficulty.toUpperCase()}</span>
+            ${completed ? '<span style="color:var(--green); float:right; font-size:10px;">✓</span>' : ''}
+            <div class="deal-card-title">${deal.title}</div>
+            <div class="deal-card-type">${deal.property.type}</div>
+        `;
+        card.addEventListener('click', () => startDeal(deal));
+        list.appendChild(card);
+    });
+}
+
+function startDeal(deal) {
+    try { audio.playMenuSelect(); } catch(e) {}
+    currentDeal = deal;
+    dealQuestionIndex = 0;
+    dealScore = 0;
+    dealTotal = deal.questions.length;
+    dealAnswered = false;
+
+    document.getElementById('deals-list').classList.add('hidden');
+    document.getElementById('deal-summary').classList.add('hidden');
+    const active = document.getElementById('deal-active');
+    active.classList.remove('hidden');
+
+    const fmt = n => '$' + n.toLocaleString();
+
+    document.getElementById('deal-property').innerHTML = `
+        <div class="deal-label">PROPERTY</div>
+        <div class="deal-value">
+            <strong>${deal.property.address}</strong><br>
+            Type: ${deal.property.type}<br>
+            Current Value: ${fmt(deal.property.currentValue)}<br>
+            ARV: ${fmt(deal.property.arv)}<br>
+            Repair Cost: ${fmt(deal.property.repairCost)}<br>
+            Condition: ${deal.property.condition}
+        </div>
+    `;
+
+    document.getElementById('deal-borrower').innerHTML = `
+        <div class="deal-label">BORROWER</div>
+        <div class="deal-value">
+            <strong>${deal.borrower.name}</strong><br>
+            Experience: ${deal.borrower.experience}<br>
+            Credit Score: ${deal.borrower.creditScore}<br>
+            Cash Reserves: ${fmt(deal.borrower.cashReserves)}<br>
+            Skin in the Game: ${fmt(deal.borrower.skinInTheGame)}
+        </div>
+    `;
+
+    document.getElementById('deal-loan').innerHTML = `
+        <div class="deal-label">LOAN REQUEST</div>
+        <div class="deal-value">
+            Amount: ${fmt(deal.loanRequest.amount)}<br>
+            Purpose: ${deal.loanRequest.purpose}<br>
+            Exit Strategy: ${deal.loanRequest.exitStrategy}<br>
+            Term: ${deal.loanRequest.term} months
+        </div>
+    `;
+
+    showDealQuestion();
+}
+
+function showDealQuestion() {
+    const q = currentDeal.questions[dealQuestionIndex];
+    dealAnswered = false;
+
+    document.getElementById('deal-progress').textContent = `Question ${dealQuestionIndex + 1} / ${dealTotal}`;
+    document.getElementById('deal-question').textContent = q.question;
+
+    const answersDiv = document.getElementById('deal-answers');
+    answersDiv.innerHTML = '';
+    const feedback = document.getElementById('deal-feedback');
+    feedback.classList.add('hidden');
+    feedback.textContent = '';
+    document.getElementById('btn-deal-next').classList.add('hidden');
+
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'study-answer-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => onDealAnswer(i));
+        answersDiv.appendChild(btn);
+    });
+}
+
+function onDealAnswer(index) {
+    if (dealAnswered) return;
+    dealAnswered = true;
+
+    const q = currentDeal.questions[dealQuestionIndex];
+    const isCorrect = index === q.correctIndex;
+    if (isCorrect) dealScore++;
+
+    const btns = document.getElementById('deal-answers').querySelectorAll('.study-answer-btn');
+    btns.forEach((btn, i) => {
+        btn.style.pointerEvents = 'none';
+        if (i === q.correctIndex) {
+            btn.style.background = 'rgba(39,174,96,0.4)';
+            btn.style.borderColor = '#27ae60';
+        } else if (i === index && !isCorrect) {
+            btn.style.background = 'rgba(231,76,60,0.4)';
+            btn.style.borderColor = '#e74c3c';
+        }
+    });
+
+    const feedback = document.getElementById('deal-feedback');
+    feedback.classList.remove('hidden');
+    feedback.style.color = isCorrect ? 'var(--green)' : 'var(--red)';
+    feedback.textContent = (isCorrect ? '✓ CORRECT! ' : '✗ WRONG. ') + q.explanation;
+
+    try { isCorrect ? audio.playCorrect() : audio.playWrong(); } catch(e) {}
+
+    document.getElementById('btn-deal-next').classList.remove('hidden');
+}
+
+function onDealNext() {
+    dealQuestionIndex++;
+    if (dealQuestionIndex < dealTotal) {
+        showDealQuestion();
+    } else {
+        completeDeal();
+    }
+}
+
+function completeDeal() {
+    document.getElementById('deal-active').classList.add('hidden');
+    const summary = document.getElementById('deal-summary');
+    summary.classList.remove('hidden');
+
+    const pct = Math.round((dealScore / dealTotal) * 100);
+    const passed = pct >= 70;
+    const xpReward = passed ? 30 + (currentDeal.difficulty === 'hard' ? 30 : currentDeal.difficulty === 'medium' ? 15 : 0) : 10;
+    const goldReward = passed ? 20 + (currentDeal.difficulty === 'hard' ? 20 : currentDeal.difficulty === 'medium' ? 10 : 0) : 0;
+
+    if (passed && !state.completedDeals.includes(currentDeal.id)) {
+        state.completedDeals.push(currentDeal.id);
+    }
+
+    state.xp += xpReward;
+    state.totalXp += xpReward;
+    state.gold += goldReward;
+    saveGame();
+
+    summary.innerHTML = `
+        <h2 class="screen-title" style="font-size:14px; margin-bottom:12px;">${passed ? 'DEAL COMPLETE!' : 'NEEDS REVIEW'}</h2>
+        <div style="font-size:24px; color:${passed ? 'var(--green)' : 'var(--red)}; margin-bottom:8px;">${dealScore}/${dealTotal}</div>
+        <div style="font-size:10px; color:var(--gray); margin-bottom:12px;">${pct}% Accuracy</div>
+        ${goldReward > 0 ? `<div style="color:var(--gold); margin-bottom:4px;">+${goldReward} Gold</div>` : ''}
+        <div style="color:var(--blue); margin-bottom:12px;">+${xpReward} XP</div>
+        <div style="font-size:9px; color:var(--white); line-height:1.8; margin-bottom:16px;">${currentDeal.summary}</div>
+        <button class="pixel-btn" onclick="document.getElementById('deal-summary').classList.add('hidden'); document.getElementById('deals-list').classList.remove('hidden');">BACK TO DEALS</button>
+    `;
 }
