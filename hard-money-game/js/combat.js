@@ -2,7 +2,7 @@
 import { QUESTIONS, STAGE_TOPICS } from './questions.js';
 import { BOSS_DATA } from './cutscenes.js';
 import { audio } from './audio.js';
-import { state, combat, showScreen, saveGame, getFrame, anim } from './engine.js';
+import { state, combat, showScreen, saveGame, getFrame, anim, hasSkill } from './engine.js';
 
 // ── Start Fight ──
 export function startFight(stageNum) {
@@ -17,7 +17,8 @@ export function startFight(stageNum) {
     const bonusHp = (stageNum >= 8 ? 2 : stageNum >= 5 ? 1 : 0);
     const armorHp = (state.equipment.armor === 'plate' || state.equipment.armor === 'golden') ? 1 : 0;
     const helmetHp = (state.equipment.helmet === 'horned') ? 1 : 0;
-    const newMaxHp = 5 + bonusHp + armorHp + helmetHp;
+    const skillHp = (hasSkill('iron_will') ? 1 : 0) + (hasSkill('legendary_knight') ? 1 : 0);
+    const newMaxHp = 5 + bonusHp + armorHp + helmetHp + skillHp;
     combat.playerMaxHp = newMaxHp;
     state.persistentMaxHp = newMaxHp;
     // Persistent HP: carry over from previous fights, capped at new max
@@ -63,6 +64,16 @@ export function startFight(stageNum) {
         combat.timerMax = 15;
         combat.baseDamageMultiplier = 1;
     }
+
+    // Skill tree bonuses
+    if (hasSkill('scholars_focus')) combat.timerMax += 2;
+    if (hasSkill('sage_wisdom')) combat.hintsRemaining++;
+    if (hasSkill('legendary_knight')) combat.shieldsRemaining++;
+    if (hasSkill('treasure_hunter')) combat.goldMultiplier += 0.15;
+    if (hasSkill('golden_touch')) combat.goldMultiplier += 0.25;
+    combat.xpEarned = 0;
+    combat.mechanicState.firstWrongProtected = hasSkill('battle_hardened');
+    combat.mechanicState.phoenixUsed = false;
 
     // Check rubber banding - died twice on this boss = extra hint
     const deaths = state.deathsPerStage[stageNum] || 0;
@@ -153,10 +164,10 @@ export function nextQuestion() {
         showComboText('BOSS ENRAGED!', '#ff2200');
     }
 
-    // Display question with topic hint
+    // Display question with topic hint (Master Lender skill shows topic)
     const topicLabel = document.getElementById('question-topic');
     if (topicLabel) {
-        topicLabel.textContent = STAGE_TOPICS[combat.bossStage] || '';
+        topicLabel.textContent = hasSkill('master_lender') ? (STAGE_TOPICS[combat.bossStage] || '') : '';
     }
     document.getElementById('question-text').textContent = q.question;
     document.getElementById('explanation-box').classList.add('hidden');
@@ -239,6 +250,11 @@ function startTimer() {
         timerBase = Math.floor(timerBase * 0.7);
     }
 
+    // Appraiser's Eye: +3 seconds on Stage 4+ questions
+    if (hasSkill('appraisers_eye') && combat.bossStage >= 4) {
+        timerBase += 3;
+    }
+
     combat.timerValue = Math.max(5, timerBase);
     const timerFill = document.getElementById('timer-fill');
     const timerText = document.getElementById('timer-text');
@@ -277,6 +293,9 @@ function startTimer() {
 
 function stopTimer() {
     clearInterval(combat.timerInterval);
+    // Clear any pending mechanic timers
+    if (combat._phantomTimer) { clearTimeout(combat._phantomTimer); combat._phantomTimer = null; }
+    if (combat._marketCrashTimer) { clearTimeout(combat._marketCrashTimer); combat._marketCrashTimer = null; }
 }
 
 // ── Answer Selection ──
@@ -330,6 +349,11 @@ function onCorrectAnswer() {
     if (combat.combo > combat.maxCombo) combat.maxCombo = combat.combo;
     if (combat.combo > state.bestCombo) state.bestCombo = combat.combo;
 
+    // XP from correct answer
+    combat.xpEarned += 10 + (combat.combo * 5);
+    // Quick Study: +5% gold bonus
+    const quickStudyMult = hasSkill('quick_study') ? 1.05 : 1;
+
     // Calculate damage
     let damage = 1;
     let goldGain = 5 + combat.combo;
@@ -355,8 +379,37 @@ function onCorrectAnswer() {
         try { audio.playSlash(); setTimeout(() => audio.playGoldPickup(), 150); } catch(e) {}
     }
 
-    // Apply gold multiplier
-    goldGain = Math.floor(goldGain * (combat.goldMultiplier || 1));
+    // Berserker: 3+ combo deals double damage
+    if (hasSkill('berserker') && combat.combo >= 3 && !isCritical) {
+        damage *= 2;
+    }
+
+    // Apply gold multiplier + Quick Study
+    goldGain = Math.floor(goldGain * (combat.goldMultiplier || 1) * quickStudyMult);
+
+    // Boss mechanic: shell_shield — first 2 hits do 50% damage
+    const bossMech = BOSS_DATA[combat.bossStage] && BOSS_DATA[combat.bossStage].mechanic;
+    if (bossMech && bossMech.type === 'shell_shield' && combat.mechanicState.shieldHits < 2) {
+        combat.mechanicState.shieldHits++;
+        damage = Math.max(1, Math.floor(damage * 0.5));
+        showMechanicAnnounce('Shell Shield absorbs some damage!');
+    }
+
+    // Boss mechanic: escrow_hold — hold gold, pay double on consecutive correct
+    if (bossMech && bossMech.type === 'escrow_hold') {
+        if (combat.mechanicState.lastCorrect && combat.mechanicState.heldGold > 0) {
+            // Consecutive correct: pay out held gold + current gold
+            goldGain += combat.mechanicState.heldGold;
+            showMechanicAnnounce('Escrow released! Double payout!');
+            combat.mechanicState.heldGold = 0;
+        } else {
+            // First correct (or non-consecutive): hold gold in escrow
+            combat.mechanicState.heldGold = goldGain;
+            goldGain = 0;
+            showMechanicAnnounce('Gold held in escrow...');
+        }
+        combat.mechanicState.lastCorrect = true;
+    }
 
     // Deal damage to boss
     combat.bossHp = Math.max(0, combat.bossHp - damage);
@@ -381,11 +434,28 @@ function onCorrectAnswer() {
 
     // Check boss death
     if (combat.bossHp <= 0) {
-        spawnBossParticles();
-        shakeScreen();
-        setTimeout(() => onBossDefeated(), 1000);
+        // Boss mechanic: rising_ashes — revive once with 2 HP
+        if (bossMech && bossMech.type === 'rising_ashes' && !combat.mechanicState.hasRevived) {
+            combat.mechanicState.hasRevived = true;
+            combat.bossHp = 2;
+            updateHpBars();
+            shakeScreen();
+            showBossTaunt('THE PHOENIX RISES!');
+            showMechanicAnnounce('The Phoenix rises from the ashes with renewed fury!');
+            setTimeout(() => nextQuestion(), 1500);
+        } else {
+            spawnBossParticles();
+            shakeScreen();
+            setTimeout(() => onBossDefeated(), 1000);
+        }
     } else {
-        setTimeout(() => nextQuestion(), 1200);
+        // Boss mechanic: two_heads — 30% chance to skip pause and rapid fire next question
+        if (bossMech && bossMech.type === 'two_heads' && Math.random() < 0.3) {
+            showMechanicAnnounce('The Hydra attacks again!');
+            setTimeout(() => nextQuestion(), 400);
+        } else {
+            setTimeout(() => nextQuestion(), 1200);
+        }
     }
 }
 
@@ -399,6 +469,43 @@ function onWrongAnswer(q, selectedAnswer) {
         correctAnswer: q.options[q.correctIndex],
         explanation: q.explanation
     });
+
+    // Boss mechanic: wrong answer effects
+    const wrongBoss = BOSS_DATA[combat.bossStage];
+    const wrongMech = wrongBoss && wrongBoss.mechanic;
+    if (wrongMech) {
+        if (wrongMech.type === 'greedy_grab') {
+            const stolenGold = Math.min(5, state.gold);
+            state.gold = Math.max(0, state.gold - 5);
+            document.getElementById('combat-gold').textContent = state.gold;
+            if (stolenGold > 0) {
+                spawnGoldNumber(`-${stolenGold}`);
+                showMechanicAnnounce(`The Goblin steals ${stolenGold} gold!`);
+            }
+        }
+        if (wrongMech.type === 'compounding_fury') {
+            combat.mechanicState.timerPenalty++;
+            combat.timerMax = Math.max(5, combat.timerMax - 1);
+            showMechanicAnnounce(`Timer reduced! ${combat.timerMax}s remaining...`);
+        }
+        if (wrongMech.type === 'penalty_interest') {
+            combat.mechanicState.wrongCount++;
+            if (combat.mechanicState.wrongCount > 1) {
+                const extraDmg = combat.mechanicState.wrongCount - 1;
+                combat.playerHp = Math.max(0, combat.playerHp - extraDmg);
+                state.persistentHp = combat.playerHp;
+                spawnDamageNumber(`-${extraDmg}`, 150, 300, 'player', false);
+                showMechanicAnnounce(`Penalty interest! +${extraDmg} extra damage!`);
+            }
+        }
+        if (wrongMech.type === 'escrow_hold') {
+            if (combat.mechanicState.heldGold > 0) {
+                showMechanicAnnounce(`Escrow forfeited! Lost ${combat.mechanicState.heldGold} held gold!`);
+                combat.mechanicState.heldGold = 0;
+            }
+            combat.mechanicState.lastCorrect = false;
+        }
+    }
 
     // Add to persistent mistake journal (avoid duplicates for same question in same fight)
     const existingEntry = state.mistakeJournal.find(e => e.questionId === q.id);
@@ -421,8 +528,13 @@ function onWrongAnswer(q, selectedAnswer) {
         });
     }
 
+    // Battle Hardened: first wrong answer deals 0 damage
+    if (combat.mechanicState.firstWrongProtected) {
+        combat.mechanicState.firstWrongProtected = false;
+        showComboText('IRON WILL!', '#4488ff');
+        try { audio.playMenuSelect(); } catch(e) {}
     // Check shield
-    if (combat.shieldsRemaining > 0) {
+    } else if (combat.shieldsRemaining > 0) {
         combat.shieldsRemaining--;
         showComboText('SHIELD BLOCKED!', '#4488ff');
         try { audio.playMenuSelect(); } catch(e) {}
@@ -461,6 +573,15 @@ function onWrongAnswer(q, selectedAnswer) {
         explBox.appendChild(continueBtn);
     } else {
         continueBtn.style.display = 'block';
+    }
+
+    // Phoenix Heart: survive death once per fight
+    if (combat.playerHp <= 0 && hasSkill('phoenix_heart') && !combat.mechanicState.phoenixUsed) {
+        combat.mechanicState.phoenixUsed = true;
+        combat.playerHp = 1;
+        state.persistentHp = 1;
+        updateHpBars();
+        showComboText('PHOENIX HEART SAVES YOU!', '#ff8800');
     }
 
     // Check player death
@@ -511,6 +632,12 @@ function onBossDefeated() {
         }
     }
 
+    // Award XP
+    combat.xpEarned += 50; // boss defeat bonus
+    if (combat.isPerfect) combat.xpEarned += 30; // perfect bonus
+    state.xp += combat.xpEarned;
+    state.totalXp += combat.xpEarned;
+
     // Check achievements
     checkAchievements();
 
@@ -532,7 +659,7 @@ function onBossDefeated() {
     document.getElementById('victory-title').textContent = state.endlessMode
         ? `ROUND ${state.endlessRound} CLEAR!`
         : 'VICTORY!';
-    document.getElementById('gold-earned').textContent = `+${combat.goldEarned} Gold`;
+    document.getElementById('gold-earned').innerHTML = `+${combat.goldEarned} Gold &nbsp; <span style="color:#aa88ff">+${combat.xpEarned} XP</span>`;
     document.getElementById('fragment-topic').textContent = boss.topic;
     document.getElementById('fragment-recovered').style.display = state.endlessMode ? 'none' : 'block';
     // HP remaining display with color coding
@@ -542,6 +669,7 @@ function onBossDefeated() {
         `Questions: ${combat.questionsAnswered - combat.wrongAnswers}/${combat.questionsAnswered} correct<br>` +
         `Best Combo: ${combat.maxCombo}x<br>` +
         `<span style="color:${hpColor}">HP Remaining: ${combat.playerHp}/${combat.playerMaxHp}</span><br>` +
+        `<span style="color:#88bbff">+${combat.xpEarned} XP earned</span><br>` +
         (combat.isPerfect ? `<div class="perfect-bonus">PERFECT! +${Math.floor(boss.goldReward * 0.5)} bonus gold!</div>` : '') +
         `<span class="boss-defeat-quote">"${boss.defeat}"</span>`;
 

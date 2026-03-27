@@ -1,5 +1,5 @@
 // UI System - Shop, Map, Cutscenes, Codex, Settings, event wiring
-import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as engineInit } from './engine.js';
+import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as engineInit, hasSkill } from './engine.js';
 import { startFight, useHint, useHealthPotion, updatePotionButton, selectAnswer, startEndlessFight, fleeFight } from './combat.js';
 import { BOSS_DATA, INTRO_CUTSCENE, ENDING_CUTSCENE, CODEX_ENTRIES } from './cutscenes.js';
 import { SHOP_ITEMS, getRandomQuote } from './shop.js';
@@ -57,6 +57,8 @@ function wireEvents() {
     document.getElementById('btn-journal').addEventListener('click', openJournal);
     document.getElementById('btn-close-journal').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
     document.getElementById('btn-settings').addEventListener('click', () => showScreen('settings'));
+    document.getElementById('btn-skills').addEventListener('click', openSkillTree);
+    document.getElementById('btn-close-skills').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
 
     // Map node clicks - use canvas click
     document.getElementById('map-screen').addEventListener('click', onMapClick);
@@ -932,7 +934,9 @@ function renderShopGrid(tab) {
     items.forEach(item => {
         const owned = state.ownedItems.has(item.id);
         const equipped = isEquipped(item);
-        const canAfford = state.gold >= item.price;
+        const displayPrice = getItemPrice(item);
+        const canAfford = state.gold >= displayPrice;
+        const discounted = displayPrice < item.price;
 
         const el = document.createElement('div');
         el.className = `shop-item${owned && !item.consumable ? ' owned' : ''}${equipped ? ' equipped' : ''}`;
@@ -940,7 +944,7 @@ function renderShopGrid(tab) {
         el.innerHTML = `
             <div class="item-name">${item.name}</div>
             <div class="item-desc">${item.description}</div>
-            <div class="item-price">${item.price === 0 ? 'FREE' : item.price + ' G'}</div>
+            <div class="item-price">${item.price === 0 ? 'FREE' : (discounted ? `<s>${item.price}</s> ${displayPrice}` : displayPrice) + ' G'}</div>
             ${owned && !item.consumable ? '<div class="item-badge">OWNED</div>' : ''}
             ${equipped ? '<div class="item-badge equipped-badge">EQUIPPED</div>' : ''}
             ${item.consumable ? `<div class="item-count">Owned: ${state.inventory[item.id] || 0}</div>` : ''}
@@ -967,8 +971,8 @@ function onShopItemClick(item) {
         return;
     }
 
-    // Check if can afford
-    if (state.gold < item.price) {
+    // Check if can afford (with Haggler discount)
+    if (state.gold < getItemPrice(item)) {
         document.getElementById('shopkeeper-quote').textContent = `"${getRandomQuote('tooExpensive')}"`;
         return;
     }
@@ -989,7 +993,7 @@ function showPurchaseConfirm(item) {
         <div class="purchase-confirm-box">
             <p class="confirm-title">CONFIRM PURCHASE</p>
             <p class="confirm-item">${item.name}</p>
-            <p class="confirm-price">${item.price} Gold</p>
+            <p class="confirm-price">${getItemPrice(item)} Gold</p>
             <p class="confirm-desc">${item.description}</p>
             <div class="confirm-buttons">
                 <button class="pixel-btn confirm-yes">BUY</button>
@@ -1011,10 +1015,16 @@ function showPurchaseConfirm(item) {
     });
 }
 
-function confirmPurchase(item) {
-    if (state.gold < item.price) return;
+function getItemPrice(item) {
+    if (item.price === 0) return 0;
+    return hasSkill('haggler') ? Math.floor(item.price * 0.9) : item.price;
+}
 
-    state.gold -= item.price;
+function confirmPurchase(item) {
+    const price = getItemPrice(item);
+    if (state.gold < price) return;
+
+    state.gold -= price;
 
     if (item.consumable) {
         state.inventory[item.id] = (state.inventory[item.id] || 0) + 1;
