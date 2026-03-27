@@ -90,6 +90,9 @@ function wireEvents() {
     });
     document.getElementById('btn-share').addEventListener('click', shareVictory);
 
+    // Reset game
+    document.getElementById('btn-reset-game').addEventListener('click', showResetConfirm);
+
     // Init audio on first interaction
     document.addEventListener('click', () => {
         try { audio.init(); } catch(e) {}
@@ -959,6 +962,81 @@ function closeSettings() {
     try { audio.playMenuSelect(); } catch(e) {}
     saveGame();
     showScreen('map');
+}
+
+// ── Reset Game ──
+function showResetConfirm() {
+    const existing = document.getElementById('reset-confirm');
+    if (existing) existing.remove();
+
+    const dialog = document.createElement('div');
+    dialog.id = 'reset-confirm';
+    dialog.className = 'purchase-confirm-overlay';
+    dialog.innerHTML = `
+        <div class="purchase-confirm-box">
+            <p class="confirm-title">⚠ RESET GAME ⚠</p>
+            <p class="confirm-desc">This will erase ALL progress, gold, items, and unlocks.</p>
+            <p class="confirm-desc">Type <strong>YES</strong> to confirm:</p>
+            <input type="text" id="reset-confirm-input" class="pixel-input" autocomplete="off" placeholder="Type YES...">
+            <div class="confirm-buttons">
+                <button class="pixel-btn confirm-yes" id="btn-confirm-reset">RESET</button>
+                <button class="pixel-btn confirm-no" id="btn-cancel-reset">CANCEL</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('settings-screen').appendChild(dialog);
+
+    const resetBtn = dialog.querySelector('#btn-confirm-reset');
+    const cancelBtn = dialog.querySelector('#btn-cancel-reset');
+    const input = dialog.querySelector('#reset-confirm-input');
+
+    input.focus();
+
+    resetBtn.addEventListener('click', () => {
+        if (input.value.trim().toUpperCase() === 'YES') {
+            dialog.remove();
+            executeReset();
+        } else {
+            input.value = '';
+            input.placeholder = 'You must type YES!';
+            input.classList.add('shake-input');
+            setTimeout(() => input.classList.remove('shake-input'), 400);
+        }
+    });
+
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') resetBtn.click();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        dialog.remove();
+        try { audio.playMenuSelect(); } catch(e) {}
+    });
+}
+
+function executeReset() {
+    SaveSystem.deleteSave();
+    state.playerName = 'Knight';
+    state.gold = 0;
+    state.currentStage = 1;
+    state.completedStages = new Set();
+    state.equipment = { helmet: 'none', armor: 'basic', sword: 'basic', cape: 'none' };
+    state.ownedItems = new Set(['helmet_none', 'armor_basic', 'sword_basic', 'cape_none']);
+    state.inventory = { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0 };
+    state.codexUnlocked = new Set();
+    state.totalKills = 0;
+    state.totalCorrect = 0;
+    state.totalAnswered = 0;
+    state.bestCombo = 0;
+    state.endlessHighScore = 0;
+    state.titles = [];
+    state.deathsPerStage = {};
+    state.endlessMode = false;
+    state.endlessRound = 0;
+    document.getElementById('btn-start').textContent = 'PRESS START';
+    showScreen('title');
+    try { audio.stopMusic(); } catch(e) {}
 }
 
 // ── Share ──

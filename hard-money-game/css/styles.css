@@ -934,6 +934,37 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   background: #c0392b !important;
 }
 
+.reset-btn {
+  background: #8b0000 !important;
+  border-color: #cc0000 !important;
+  margin-top: 20px;
+}
+
+.reset-btn:hover {
+  background: #cc0000 !important;
+}
+
+#reset-confirm .pixel-input {
+  display: block;
+  margin: 12px auto;
+  width: 180px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#reset-confirm .confirm-yes {
+  background: #8b0000 !important;
+  border-color: #cc0000 !important;
+}
+
+#reset-confirm .confirm-yes:hover {
+  background: #cc0000 !important;
+}
+
+.shake-input {
+  animation: shake 0.4s ease-in-out;
+}
+
 .share-card {
   background: var(--bg-panel);
   border: 2px solid var(--gold-dark);
