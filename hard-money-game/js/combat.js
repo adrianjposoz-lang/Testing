@@ -47,6 +47,7 @@ export function startFight(stageNum) {
     combat.eliminatedIndex = -1;
     combat.questionIndex = 0;
     combat.wrongAnswers = 0;
+    combat.missedQuestions = [];
     combat.answerTimes = [];
     combat._rageShown = false;
 
@@ -215,7 +216,7 @@ export function selectAnswer(index) {
     if (correct) {
         onCorrectAnswer();
     } else {
-        onWrongAnswer(q);
+        onWrongAnswer(q, q.options[index]);
     }
 }
 
@@ -231,7 +232,7 @@ function timeOut() {
         if (i === q.correctIndex) btn.classList.add('correct');
     });
 
-    onWrongAnswer(q);
+    onWrongAnswer(q, 'Time ran out');
 }
 
 // ── Correct Answer ──
@@ -303,9 +304,15 @@ function onCorrectAnswer() {
 }
 
 // ── Wrong Answer ──
-function onWrongAnswer(q) {
+function onWrongAnswer(q, selectedAnswer) {
     combat.combo = 0;
     combat.wrongAnswers++;
+    combat.missedQuestions.push({
+        question: q.question,
+        yourAnswer: selectedAnswer,
+        correctAnswer: q.options[q.correctIndex],
+        explanation: q.explanation
+    });
 
     // Check shield
     if (combat.shieldsRemaining > 0) {
@@ -430,6 +437,24 @@ function onBossDefeated() {
         `<span style="color:${hpColor}">HP Remaining: ${combat.playerHp}/${combat.playerMaxHp}</span><br>` +
         (combat.isPerfect ? `<div class="perfect-bonus">PERFECT! +${Math.floor(boss.goldReward * 0.5)} bonus gold!</div>` : '') +
         `<span class="boss-defeat-quote">"${boss.defeat}"</span>`;
+
+    // Wrong answer review
+    const reviewEl = document.getElementById('missed-review');
+    const listEl = document.getElementById('missed-list');
+    if (combat.missedQuestions.length > 0) {
+        reviewEl.classList.remove('hidden');
+        listEl.innerHTML = combat.missedQuestions.map(m =>
+            `<div class="missed-item">` +
+            `<div class="missed-q">${m.question}</div>` +
+            `<div class="missed-wrong">Your answer: ${m.yourAnswer}</div>` +
+            `<div class="missed-correct">Correct: ${m.correctAnswer}</div>` +
+            `<div class="missed-explain">${m.explanation}</div>` +
+            `</div>`
+        ).join('');
+    } else {
+        reviewEl.classList.add('hidden');
+        listEl.innerHTML = '';
+    }
 
     // Codex notification
     if (!state.endlessMode) {

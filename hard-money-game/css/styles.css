@@ -912,6 +912,59 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 
 /* =============================================================
+   WRONG ANSWER REVIEW
+   ============================================================= */
+.missed-review {
+  margin-top: 12px;
+  border-top: 2px solid var(--gold-dark);
+  padding-top: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.review-title {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--red);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.missed-item {
+  background: rgba(0,0,0,0.3);
+  border-left: 3px solid var(--red);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.missed-q {
+  font-size: 9px;
+  color: var(--white);
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.missed-wrong {
+  font-size: 8px;
+  color: #e74c3c;
+  margin-bottom: 2px;
+}
+
+.missed-correct {
+  font-size: 8px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.missed-explain {
+  font-size: 7px;
+  color: var(--gold);
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* =============================================================
    DEATH SCREEN
    ============================================================= */
 .death-screen {
