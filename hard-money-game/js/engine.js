@@ -549,9 +549,186 @@ function drawCastleTerrain(ctx, cx, cy, r) {
     ctx.fill();
 }
 
+function drawMapWorldBackground(ctx, w, h) {
+    // Base green grassland
+    ctx.fillStyle = '#1a3322';
+    ctx.fillRect(0, 0, w, h);
+
+    // Grass texture - subtle pixel variation
+    for (let gx = 0; gx < w; gx += 8) {
+        for (let gy = 0; gy < h; gy += 8) {
+            const n = Math.sin(gx * 0.7 + gy * 0.5) * 0.5 + Math.sin(gx * 0.3 - gy * 0.8) * 0.5;
+            const shade = Math.floor(n * 8);
+            const g = 0x33 + shade;
+            ctx.fillStyle = `rgb(${0x1a + shade},${g},${0x22 + shade})`;
+            ctx.fillRect(gx, gy, 8, 8);
+        }
+    }
+
+    // Lighter grass patches (meadows)
+    const meadows = [
+        { x: 150, y: 350, rx: 80, ry: 50 },
+        { x: 500, y: 300, rx: 70, ry: 45 },
+        { x: 350, y: 500, rx: 90, ry: 40 },
+        { x: 650, y: 420, rx: 60, ry: 35 },
+    ];
+    for (const m of meadows) {
+        ctx.fillStyle = 'rgba(40,70,35,0.6)';
+        ctx.beginPath();
+        ctx.ellipse(m.x, m.y, m.rx, m.ry, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Dirt/brown patches (paths between areas)
+    ctx.fillStyle = '#3a2a1a';
+    ctx.lineWidth = 12;
+    ctx.strokeStyle = '#3a2a1a';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    // Main dirt road following the path
+    ctx.beginPath();
+    ctx.moveTo(80, 480);
+    ctx.lineTo(200, 400);
+    ctx.lineTo(320, 460);
+    ctx.lineTo(440, 380);
+    ctx.lineTo(400, 260);
+    ctx.lineTo(280, 200);
+    ctx.lineTo(400, 140);
+    ctx.lineTo(540, 200);
+    ctx.lineTo(620, 320);
+    ctx.lineTo(700, 180);
+    ctx.stroke();
+    // Dirt road texture
+    ctx.strokeStyle = '#4a3a2a';
+    ctx.lineWidth = 6;
+    ctx.setLineDash([4, 8]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // River flowing across the map (between stages 3-5 area)
+    ctx.strokeStyle = '#1a4a6a';
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-10, 520);
+    ctx.bezierCurveTo(100, 530, 250, 490, 350, 520);
+    ctx.bezierCurveTo(450, 550, 550, 480, 700, 500);
+    ctx.bezierCurveTo(750, 490, 780, 510, 810, 500);
+    ctx.stroke();
+    // River highlight
+    ctx.strokeStyle = '#2a6a8a';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(-10, 518);
+    ctx.bezierCurveTo(100, 528, 250, 488, 350, 518);
+    ctx.bezierCurveTo(450, 548, 550, 478, 700, 498);
+    ctx.bezierCurveTo(750, 488, 780, 508, 810, 498);
+    ctx.stroke();
+    // Animated water shimmer
+    ctx.strokeStyle = `rgba(100,180,220,${0.15 + Math.sin(frame * 0.04) * 0.1})`;
+    ctx.lineWidth = 2;
+    for (let j = 0; j < 3; j++) {
+        ctx.beginPath();
+        for (let x = 0; x < w; x += 6) {
+            const baseY = 520 + Math.sin(x * 0.01 + 1) * 30 - Math.sin(x * 0.005) * 20;
+            const wy = baseY + j * 3 + Math.sin((x + frame * 3) * 0.1) * 2;
+            if (x === 0) ctx.moveTo(x, wy);
+            else ctx.lineTo(x, wy);
+        }
+        ctx.stroke();
+    }
+
+    // Mountain range across top of map
+    ctx.fillStyle = '#2a2a3a';
+    for (let i = 0; i < 12; i++) {
+        const mx = i * 75 - 20;
+        const mh = 40 + Math.sin(i * 1.8) * 25 + Math.sin(i * 0.7) * 15;
+        const mw = 60 + Math.sin(i * 2.3) * 20;
+        ctx.beginPath();
+        ctx.moveTo(mx - mw / 2, 80);
+        ctx.lineTo(mx, 80 - mh);
+        ctx.lineTo(mx + mw / 2, 80);
+        ctx.fill();
+    }
+    // Snow caps
+    ctx.fillStyle = '#889999';
+    for (let i = 0; i < 12; i++) {
+        const mx = i * 75 - 20;
+        const mh = 40 + Math.sin(i * 1.8) * 25 + Math.sin(i * 0.7) * 15;
+        const mw = 60 + Math.sin(i * 2.3) * 20;
+        ctx.beginPath();
+        ctx.moveTo(mx - mw * 0.15, 80 - mh + mh * 0.25);
+        ctx.lineTo(mx, 80 - mh);
+        ctx.lineTo(mx + mw * 0.15, 80 - mh + mh * 0.25);
+        ctx.fill();
+    }
+
+    // Hills (rolling bumps across terrain)
+    const hills = [
+        { x: 50, y: 380, rx: 60, ry: 20, c: '#1e3a25' },
+        { x: 600, y: 450, rx: 70, ry: 18, c: '#1e3825' },
+        { x: 720, y: 350, rx: 50, ry: 15, c: '#1c3622' },
+        { x: 180, y: 280, rx: 55, ry: 16, c: '#1e3a28' },
+        { x: 550, y: 140, rx: 45, ry: 14, c: '#1a3424' },
+        { x: 130, y: 160, rx: 65, ry: 18, c: '#1c3826' },
+    ];
+    for (const h of hills) {
+        ctx.fillStyle = h.c;
+        ctx.beginPath();
+        ctx.ellipse(h.x, h.y, h.rx, h.ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Scattered trees in background (small pixel trees)
+    const bgTrees = [
+        { x: 30, y: 350 }, { x: 55, y: 360 }, { x: 140, y: 320 },
+        { x: 170, y: 280 }, { x: 520, y: 450 }, { x: 580, y: 420 },
+        { x: 650, y: 380 }, { x: 710, y: 400 }, { x: 130, y: 170 },
+        { x: 160, y: 150 }, { x: 750, y: 280 }, { x: 770, y: 300 },
+        { x: 10, y: 250 }, { x: 40, y: 230 }, { x: 580, y: 100 },
+        { x: 200, y: 140 }, { x: 470, y: 460 }, { x: 690, y: 140 },
+    ];
+    for (const t of bgTrees) {
+        ctx.fillStyle = '#3a2a15';
+        ctx.fillRect(t.x - 1, t.y + 2, 2, 6);
+        ctx.fillStyle = '#1a4a1a';
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#2a5a2a';
+        ctx.beginPath();
+        ctx.arc(t.x + 1, t.y - 1, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Rocky outcrops (small gray patches)
+    const rocks = [
+        { x: 460, y: 150 }, { x: 300, y: 350 }, { x: 680, y: 260 },
+        { x: 100, y: 440 }, { x: 550, y: 350 }, { x: 370, y: 420 },
+    ];
+    for (const r of rocks) {
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(r.x - 4, r.y - 2, 8, 5);
+        ctx.fillStyle = '#4a4a4a';
+        ctx.fillRect(r.x - 2, r.y - 3, 5, 3);
+    }
+
+    // Small flowers/grass tufts
+    for (let i = 0; i < 30; i++) {
+        const fx = (i * 127 + 33) % w;
+        const fy = 100 + (i * 83 + 17) % (h - 150);
+        ctx.fillStyle = i % 3 === 0 ? '#4a7a3a' : i % 3 === 1 ? '#5a8a4a' : '#3a6a2a';
+        ctx.fillRect(fx, fy, 3, 3);
+        if (i % 4 === 0) {
+            ctx.fillStyle = '#cc8844';
+            ctx.fillRect(fx + 1, fy - 1, 1, 1);
+        }
+    }
+}
+
 function renderMap() {
-    ctx.fillStyle = '#0d1b2a';
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    // Rich world background
+    drawMapWorldBackground(ctx, WIDTH, HEIGHT);
 
     // Draw terrain zones behind everything
     for (let i = 1; i <= 10; i++) {
@@ -582,21 +759,36 @@ function renderMap() {
 
         ctx.restore();
 
-        // Soft edge glow
-        ctx.save();
-        ctx.globalAlpha = 0.15;
-        ctx.strokeStyle = zone.detail;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
+        // Soft blended edge (feathered border)
+        for (let r = radius + 6; r > radius - 2; r -= 2) {
+            ctx.save();
+            ctx.globalAlpha = 0.04;
+            ctx.strokeStyle = zone.bg;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
     }
 
-    // Map path
-    ctx.strokeStyle = '#556677';
-    ctx.lineWidth = 4;
-    ctx.setLineDash([8, 6]);
+    // Dirt road path connecting nodes
+    ctx.strokeStyle = '#5a4a30';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    for (let i = 1; i <= 10; i++) {
+        const pos = getMapNodePos(i);
+        if (i === 1) ctx.moveTo(pos.x, pos.y);
+        else ctx.lineTo(pos.x, pos.y);
+    }
+    ctx.stroke();
+    // Road detail lines
+    ctx.strokeStyle = '#6a5a3a';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 10]);
     ctx.beginPath();
     for (let i = 1; i <= 10; i++) {
         const pos = getMapNodePos(i);
@@ -605,17 +797,6 @@ function renderMap() {
     }
     ctx.stroke();
     ctx.setLineDash([]);
-
-    // Path glow
-    ctx.strokeStyle = 'rgba(100,140,180,0.15)';
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    for (let i = 1; i <= 10; i++) {
-        const pos = getMapNodePos(i);
-        if (i === 1) ctx.moveTo(pos.x, pos.y);
-        else ctx.lineTo(pos.x, pos.y);
-    }
-    ctx.stroke();
 
     // Nodes
     for (let i = 1; i <= 10; i++) {
@@ -658,8 +839,12 @@ function renderMap() {
 
         // Boss name below
         if (!locked && BOSS_DATA[i]) {
+            // Dark background for readability
             ctx.font = '8px "Press Start 2P", monospace';
-            ctx.fillStyle = completed ? '#44cc66' : '#aaaaaa';
+            const nameWidth = ctx.measureText(BOSS_DATA[i].name).width;
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(pos.x - nameWidth / 2 - 3, pos.y + 25, nameWidth + 6, 14);
+            ctx.fillStyle = completed ? '#44cc66' : '#ddddcc';
             ctx.fillText(BOSS_DATA[i].name, pos.x, pos.y + 32);
         }
 
