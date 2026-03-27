@@ -427,7 +427,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
 .hud-bottom-left {
   position: absolute;
-  bottom: 140px;
+  top: 18%;
   left: 12px;
 }
 
@@ -471,7 +471,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
 .timer-container {
   position: absolute;
-  bottom: 130px;
+  top: 20%;
   right: 12px;
   display: flex;
   align-items: center;
@@ -516,6 +516,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
    ============================================================= */
 .question-panel {
   position: absolute;
+  top: 30%;
   bottom: 0;
   left: 0;
   right: 0;
@@ -526,6 +527,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow-y: auto;
 }
 
 .question-text {
@@ -1830,17 +1832,18 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .hud-bottom-left {
-    bottom: 120px;
+    top: 16%;
     left: 8px;
   }
 
   .timer-container {
-    bottom: 110px;
+    top: 18%;
     right: 8px;
   }
 
   /* --- Question panel --- */
   .question-panel {
+    top: 28%;
     padding: 10px 12px;
     gap: 8px;
   }

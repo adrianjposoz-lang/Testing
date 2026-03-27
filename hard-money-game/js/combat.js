@@ -572,12 +572,12 @@ export function useHint() {
 export function useHealthPotion() {
     if (state.inventory.potion_hp <= 0 || combat.playerHp >= combat.playerMaxHp) return;
     state.inventory.potion_hp--;
-    combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 2);
+    combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 1);
     state.persistentHp = combat.playerHp;
     updateHpBars();
     updatePotionButton();
     try { audio.playGoldPickup(); } catch(e) {}
-    showComboText('+2 HP', '#22ff44');
+    showComboText('+1 HP', '#22ff44');
     spawnHealParticles();
     flashScreen('heal');
 }
