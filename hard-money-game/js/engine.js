@@ -906,6 +906,12 @@ export function showScreen(screenName) {
         case 'map':
             document.getElementById('map-screen').classList.remove('hidden');
             document.getElementById('map-gold').textContent = `Gold: ${state.gold}`;
+            const potionCount = state.inventory.potion_hp || 0;
+            const potionEl = document.getElementById('map-potions');
+            if (potionEl) {
+                potionEl.textContent = `🧪 ${potionCount}`;
+                potionEl.style.color = potionCount > 0 ? '#66cc66' : '#888888';
+            }
             const mapHpEl = document.getElementById('map-hp');
             mapHpEl.textContent = `HP: ${state.persistentHp}/${state.persistentMaxHp}`;
             const hpPercent = state.persistentHp / state.persistentMaxHp;

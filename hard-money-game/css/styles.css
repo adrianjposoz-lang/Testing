@@ -360,6 +360,11 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   font-size: 12px;
 }
 
+.potion-display {
+  font-size: 12px;
+  color: #66cc66;
+}
+
 /* =============================================================
    COMBAT HUD
    ============================================================= */
