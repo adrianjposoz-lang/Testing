@@ -658,6 +658,23 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 .damage-number.player { color: var(--red); }
 .damage-number.critical { font-size: 24px; color: #ff4444; text-shadow: 0 0 10px #ff0000, 2px 2px 0 #000; }
 
+.gold-float-number {
+  position: absolute;
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffdd44;
+  text-shadow: 1px 1px 0 #000, 0 0 6px rgba(255,200,0,0.5);
+  pointer-events: none;
+  animation: goldFloat 1.4s ease-out forwards;
+}
+
+@keyframes goldFloat {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  30% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+  100% { transform: translateY(-40px) scale(0.8); opacity: 0; }
+}
+
 /* =============================================================
    SHOP
    ============================================================= */

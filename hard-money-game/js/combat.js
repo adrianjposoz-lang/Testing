@@ -288,6 +288,7 @@ function onCorrectAnswer() {
     document.getElementById('combat-gold').textContent = state.gold;
     spawnDamageNumber(`-${damage}`, 560, 250, 'boss', isCritical);
     spawnHpBarDamage(damage, 'boss', isCritical);
+    spawnGoldNumber(`+${goldGain}`);
     flashScreen('green');
 
     // Check boss death
@@ -579,6 +580,23 @@ function spawnDamageNumber(text, x, y, type, critical) {
     el.style.top = y + 'px';
     container.appendChild(el);
     setTimeout(() => el.remove(), 1500);
+}
+
+function spawnGoldNumber(text) {
+    const goldEl = document.getElementById('combat-gold');
+    if (!goldEl) return;
+    const container = document.getElementById('damage-numbers');
+    const rect = goldEl.getBoundingClientRect();
+    const containerRect = document.getElementById('game-container').getBoundingClientRect();
+    const x = rect.left - containerRect.left + rect.width / 2;
+    const y = rect.top - containerRect.top;
+    const el = document.createElement('div');
+    el.className = 'gold-float-number';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 1400);
 }
 
 function spawnHpBarDamage(amount, type, critical) {

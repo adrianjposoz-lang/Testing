@@ -775,18 +775,29 @@ function renderMap() {
 
         // Node outer glow
         if (current) {
-            const glowPulse = 0.15 + Math.sin(frame * 0.08) * 0.1;
+            // Pulsing outer glow ring
+            const glowPulse = 0.15 + Math.sin(frame * 0.06) * 0.12;
+            const glowSize = 32 + Math.sin(frame * 0.06) * 4;
             ctx.fillStyle = `rgba(255,200,44,${glowPulse})`;
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2);
+            ctx.arc(pos.x, pos.y, glowSize, 0, Math.PI * 2);
             ctx.fill();
+            // Spinning ring indicator
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255,220,68,0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const ringAngle = frame * 0.03;
+            ctx.arc(pos.x, pos.y, 26, ringAngle, ringAngle + Math.PI * 1.2);
+            ctx.stroke();
+            ctx.restore();
         }
 
         // Translucent node circle
         if (completed) {
-            ctx.fillStyle = 'rgba(34,170,68,0.3)';
+            ctx.fillStyle = 'rgba(34,170,68,0.35)';
         } else if (current) {
-            const pulse = Math.sin(frame * 0.08) * 0.1 + 0.25;
+            const pulse = Math.sin(frame * 0.06) * 0.1 + 0.3;
             ctx.fillStyle = `rgba(255,200,44,${pulse})`;
         } else {
             ctx.fillStyle = 'rgba(40,40,60,0.4)';
@@ -794,8 +805,8 @@ function renderMap() {
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = completed ? 'rgba(68,221,102,0.6)' : current ? 'rgba(255,204,68,0.7)' : 'rgba(100,100,120,0.4)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = completed ? 'rgba(68,221,102,0.7)' : current ? 'rgba(255,204,68,0.8)' : 'rgba(100,100,120,0.4)';
+        ctx.lineWidth = completed ? 2.5 : 2;
         ctx.stroke();
 
         // Stage number
@@ -815,11 +826,23 @@ function renderMap() {
             ctx.fillText(BOSS_DATA[i].name, pos.x, pos.y + 32);
         }
 
-        // Checkmark for completed
+        // Completed badge
         if (completed) {
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.font = '12px "Press Start 2P", monospace';
-            ctx.fillText('✓', pos.x, pos.y - 28);
+            // Green circle badge with checkmark
+            ctx.save();
+            ctx.fillStyle = 'rgba(34,170,68,0.9)';
+            ctx.beginPath();
+            ctx.arc(pos.x + 14, pos.y - 16, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '9px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✓', pos.x + 14, pos.y - 16);
+            ctx.restore();
         }
     }
 }
