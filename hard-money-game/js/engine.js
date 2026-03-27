@@ -250,12 +250,353 @@ function drawSlashEffect(ctx, x, y, frame) {
     ctx.globalAlpha = 1;
 }
 
+// Terrain themes per stage
+const TERRAIN_ZONES = {
+    1:  { bg: '#1a3a1a', accent: '#2a5a2a', detail: '#3a6a3a', name: 'forest',    draw: drawForestTerrain },
+    2:  { bg: '#3a1a0a', accent: '#5a2a0a', detail: '#ff6622', name: 'volcano',   draw: drawVolcanoTerrain },
+    3:  { bg: '#1a3a5a', accent: '#2a5a7a', detail: '#cca866', name: 'beach',     draw: drawBeachTerrain },
+    4:  { bg: '#1a1a2a', accent: '#2a2a3a', detail: '#6a6a8a', name: 'graveyard', draw: drawGraveyardTerrain },
+    5:  { bg: '#1a2a1a', accent: '#2a4a2a', detail: '#5a7a3a', name: 'swamp',     draw: drawSwampTerrain },
+    6:  { bg: '#0a2a1a', accent: '#0a3a2a', detail: '#1a5a3a', name: 'deepwoods', draw: drawDeepwoodsTerrain },
+    7:  { bg: '#2a0a0a', accent: '#4a0a0a', detail: '#ff3300', name: 'hellscape', draw: drawHellTerrain },
+    8:  { bg: '#1a1a1a', accent: '#2a2a3a', detail: '#4a4a5a', name: 'dungeon',   draw: drawDungeonTerrain },
+    9:  { bg: '#2a1a3a', accent: '#4a2a5a', detail: '#aa66cc', name: 'sky',       draw: drawSkyTerrain },
+    10: { bg: '#1a1a2a', accent: '#2a2a3a', detail: '#aa8844', name: 'castle',    draw: drawCastleTerrain },
+};
+
+function drawForestTerrain(ctx, cx, cy, r) {
+    // Trees around the node
+    for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2 + Math.sin(i * 3) * 0.3;
+        const d = r * 0.5 + Math.sin(i * 5) * r * 0.2;
+        const tx = cx + Math.cos(a) * d;
+        const ty = cy + Math.sin(a) * d;
+        // Trunk
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(tx - 2, ty, 4, 10);
+        // Canopy
+        ctx.fillStyle = '#2a6a2a';
+        ctx.beginPath();
+        ctx.arc(tx, ty - 2, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#3a8a3a';
+        ctx.beginPath();
+        ctx.arc(tx + 2, ty - 4, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawVolcanoTerrain(ctx, cx, cy, r) {
+    // Volcanic rocks and lava cracks
+    ctx.fillStyle = '#3a2a1a';
+    for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        const d = r * 0.5 + Math.sin(i * 4) * r * 0.15;
+        const rx = cx + Math.cos(a) * d;
+        const ry = cy + Math.sin(a) * d;
+        ctx.fillRect(rx - 4, ry - 3, 8, 6);
+    }
+    // Lava glow lines
+    ctx.strokeStyle = `rgba(255,100,0,${0.4 + Math.sin(frame * 0.1) * 0.2})`;
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + 0.5;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * r * 0.25, cy + Math.sin(a) * r * 0.25);
+        ctx.lineTo(cx + Math.cos(a) * r * 0.55, cy + Math.sin(a) * r * 0.55);
+        ctx.stroke();
+    }
+}
+
+function drawBeachTerrain(ctx, cx, cy, r) {
+    // Sandy patches
+    ctx.fillStyle = '#cca866';
+    for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2 + 0.3;
+        const d = r * 0.45;
+        ctx.beginPath();
+        ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 12, 6, a, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Animated waves
+    ctx.strokeStyle = `rgba(100,180,255,${0.5 + Math.sin(frame * 0.06) * 0.3})`;
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i++) {
+        const wy = cy - r * 0.3 + i * 12;
+        ctx.beginPath();
+        for (let x = cx - r * 0.5; x < cx + r * 0.5; x += 4) {
+            ctx.lineTo(x, wy + Math.sin((x + frame * 2) * 0.08) * 3);
+        }
+        ctx.stroke();
+    }
+}
+
+function drawGraveyardTerrain(ctx, cx, cy, r) {
+    // Tombstones
+    for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + 0.4;
+        const d = r * 0.5;
+        const gx = cx + Math.cos(a) * d;
+        const gy = cy + Math.sin(a) * d;
+        ctx.fillStyle = '#5a5a6a';
+        ctx.fillRect(gx - 3, gy - 6, 6, 10);
+        // Rounded top
+        ctx.beginPath();
+        ctx.arc(gx, gy - 6, 3, Math.PI, 0);
+        ctx.fill();
+        // Cross
+        ctx.fillStyle = '#3a3a4a';
+        ctx.fillRect(gx - 0.5, gy - 5, 1, 4);
+        ctx.fillRect(gx - 2, gy - 4, 4, 1);
+    }
+    // Fog wisps
+    ctx.fillStyle = `rgba(150,150,180,${0.1 + Math.sin(frame * 0.03) * 0.05})`;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + r * 0.3, r * 0.6, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function drawSwampTerrain(ctx, cx, cy, r) {
+    // Murky water pools
+    ctx.fillStyle = '#2a4a1a';
+    for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + 0.7;
+        const d = r * 0.45;
+        ctx.beginPath();
+        ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 14, 8, a * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Bubbles
+    const bubblePhase = (frame * 0.05) % (Math.PI * 2);
+    ctx.fillStyle = `rgba(100,160,60,${0.4 + Math.sin(bubblePhase) * 0.3})`;
+    for (let i = 0; i < 3; i++) {
+        const bx = cx + Math.sin(i * 2.5 + frame * 0.02) * r * 0.3;
+        const by = cy + Math.cos(i * 3.1 + frame * 0.015) * r * 0.2;
+        ctx.beginPath();
+        ctx.arc(bx, by, 2 + Math.sin(frame * 0.1 + i) * 1, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Reeds
+    ctx.strokeStyle = '#4a6a2a';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2;
+        const rx = cx + Math.cos(a) * r * 0.5;
+        const ry = cy + Math.sin(a) * r * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(rx, ry + 5);
+        ctx.lineTo(rx + Math.sin(frame * 0.04 + i) * 2, ry - 10);
+        ctx.stroke();
+    }
+}
+
+function drawDeepwoodsTerrain(ctx, cx, cy, r) {
+    // Dense dark trees
+    for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        const d = r * 0.5 + Math.sin(i * 7) * r * 0.15;
+        const tx = cx + Math.cos(a) * d;
+        const ty = cy + Math.sin(a) * d;
+        ctx.fillStyle = '#3a2a1a';
+        ctx.fillRect(tx - 2, ty - 2, 4, 14);
+        ctx.fillStyle = '#0a3a1a';
+        ctx.beginPath();
+        ctx.moveTo(tx - 8, ty);
+        ctx.lineTo(tx, ty - 14);
+        ctx.lineTo(tx + 8, ty);
+        ctx.fill();
+        ctx.fillStyle = '#0a4a2a';
+        ctx.beginPath();
+        ctx.moveTo(tx - 6, ty - 5);
+        ctx.lineTo(tx, ty - 16);
+        ctx.lineTo(tx + 6, ty - 5);
+        ctx.fill();
+    }
+    // Fireflies
+    for (let i = 0; i < 4; i++) {
+        const fx = cx + Math.sin(frame * 0.02 + i * 1.7) * r * 0.4;
+        const fy = cy + Math.cos(frame * 0.025 + i * 2.3) * r * 0.3;
+        const glow = 0.3 + Math.sin(frame * 0.1 + i * 3) * 0.3;
+        ctx.fillStyle = `rgba(180,255,100,${glow})`;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawHellTerrain(ctx, cx, cy, r) {
+    // Fire pillars
+    for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2 + 0.2;
+        const d = r * 0.5;
+        const fx = cx + Math.cos(a) * d;
+        const fy = cy + Math.sin(a) * d;
+        const flicker = Math.sin(frame * 0.15 + i * 2) * 3;
+        // Fire base
+        ctx.fillStyle = '#ff4400';
+        ctx.beginPath();
+        ctx.moveTo(fx - 4, fy + 4);
+        ctx.lineTo(fx + flicker * 0.5, fy - 10 + flicker);
+        ctx.lineTo(fx + 4, fy + 4);
+        ctx.fill();
+        ctx.fillStyle = '#ffaa00';
+        ctx.beginPath();
+        ctx.moveTo(fx - 2, fy + 2);
+        ctx.lineTo(fx + flicker * 0.3, fy - 6 + flicker * 0.5);
+        ctx.lineTo(fx + 2, fy + 2);
+        ctx.fill();
+    }
+    // Cracks with glow
+    ctx.strokeStyle = `rgba(255,60,0,${0.5 + Math.sin(frame * 0.08) * 0.2})`;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * r * 0.15, cy + Math.sin(a) * r * 0.15);
+        const ma = a + Math.sin(i * 3) * 0.3;
+        ctx.lineTo(cx + Math.cos(ma) * r * 0.5, cy + Math.sin(ma) * r * 0.5);
+        ctx.stroke();
+    }
+}
+
+function drawDungeonTerrain(ctx, cx, cy, r) {
+    // Stone blocks
+    ctx.fillStyle = '#3a3a4a';
+    for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const d = r * 0.5;
+        const bx = cx + Math.cos(a) * d - 5;
+        const by = cy + Math.sin(a) * d - 4;
+        ctx.fillRect(bx, by, 10, 8);
+        ctx.strokeStyle = '#2a2a3a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, 10, 8);
+    }
+    // Chains
+    ctx.strokeStyle = '#5a5a6a';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 2; i++) {
+        const cx2 = cx + (i === 0 ? -r * 0.35 : r * 0.35);
+        for (let j = 0; j < 3; j++) {
+            ctx.beginPath();
+            ctx.ellipse(cx2, cy - r * 0.3 + j * 8, 3, 4, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+}
+
+function drawSkyTerrain(ctx, cx, cy, r) {
+    // Clouds
+    ctx.fillStyle = `rgba(180,150,220,${0.25 + Math.sin(frame * 0.03) * 0.1})`;
+    for (let i = 0; i < 4; i++) {
+        const cloudX = cx + Math.sin(i * 2.5 + frame * 0.008) * r * 0.5;
+        const cloudY = cy - r * 0.2 + i * 10;
+        ctx.beginPath();
+        ctx.ellipse(cloudX, cloudY, 16, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cloudX + 10, cloudY + 2, 12, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Lightning flicker
+    if (Math.sin(frame * 0.2) > 0.95) {
+        ctx.strokeStyle = 'rgba(200,180,255,0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - 5, cy - r * 0.4);
+        ctx.lineTo(cx + 3, cy - r * 0.2);
+        ctx.lineTo(cx - 2, cy);
+        ctx.lineTo(cx + 5, cy + r * 0.2);
+        ctx.stroke();
+    }
+    // Stars
+    for (let i = 0; i < 6; i++) {
+        const sx = cx + Math.cos(i * 1.1) * r * 0.55;
+        const sy = cy + Math.sin(i * 1.7) * r * 0.35;
+        const twinkle = 0.3 + Math.sin(frame * 0.08 + i * 2) * 0.3;
+        ctx.fillStyle = `rgba(220,200,255,${twinkle})`;
+        ctx.fillRect(sx - 1, sy - 1, 2, 2);
+    }
+}
+
+function drawCastleTerrain(ctx, cx, cy, r) {
+    // Castle turrets
+    ctx.fillStyle = '#4a4a5a';
+    for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + 0.4;
+        const d = r * 0.5;
+        const tx = cx + Math.cos(a) * d;
+        const ty = cy + Math.sin(a) * d;
+        // Tower body
+        ctx.fillRect(tx - 4, ty - 8, 8, 16);
+        // Battlements
+        ctx.fillStyle = '#5a5a6a';
+        ctx.fillRect(tx - 5, ty - 10, 3, 4);
+        ctx.fillRect(tx + 2, ty - 10, 3, 4);
+        ctx.fillStyle = '#4a4a5a';
+        // Window
+        ctx.fillStyle = '#ffcc44';
+        ctx.fillRect(tx - 1, ty - 4, 2, 3);
+        ctx.fillStyle = '#4a4a5a';
+    }
+    // Banner
+    const bannerWave = Math.sin(frame * 0.06) * 2;
+    ctx.fillStyle = '#cc2222';
+    ctx.beginPath();
+    ctx.moveTo(cx + r * 0.15, cy - r * 0.45);
+    ctx.lineTo(cx + r * 0.15 + 10 + bannerWave, cy - r * 0.4);
+    ctx.lineTo(cx + r * 0.15, cy - r * 0.35);
+    ctx.fill();
+}
+
 function renderMap() {
     ctx.fillStyle = '#0d1b2a';
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    // Draw terrain zones behind everything
+    for (let i = 1; i <= 10; i++) {
+        const pos = getMapNodePos(i);
+        const zone = TERRAIN_ZONES[i];
+        const radius = 55;
+
+        // Terrain background circle (radial gradient feel)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Base fill
+        ctx.fillStyle = zone.bg;
+        ctx.fillRect(pos.x - radius, pos.y - radius, radius * 2, radius * 2);
+
+        // Accent ring
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = zone.accent;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw terrain-specific details
+        ctx.globalAlpha = 1;
+        zone.draw(ctx, pos.x, pos.y, radius);
+
+        ctx.restore();
+
+        // Soft edge glow
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        ctx.strokeStyle = zone.detail;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+
     // Map path
-    ctx.strokeStyle = '#334455';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#556677';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([8, 6]);
     ctx.beginPath();
     for (let i = 1; i <= 10; i++) {
         const pos = getMapNodePos(i);
@@ -263,12 +604,34 @@ function renderMap() {
         else ctx.lineTo(pos.x, pos.y);
     }
     ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Path glow
+    ctx.strokeStyle = 'rgba(100,140,180,0.15)';
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    for (let i = 1; i <= 10; i++) {
+        const pos = getMapNodePos(i);
+        if (i === 1) ctx.moveTo(pos.x, pos.y);
+        else ctx.lineTo(pos.x, pos.y);
+    }
+    ctx.stroke();
+
     // Nodes
     for (let i = 1; i <= 10; i++) {
         const pos = getMapNodePos(i);
         const completed = state.completedStages.has(i);
         const current = i === state.currentStage;
         const locked = i > state.currentStage;
+
+        // Node outer glow
+        if (current) {
+            const glowPulse = 0.2 + Math.sin(frame * 0.08) * 0.15;
+            ctx.fillStyle = `rgba(255,200,44,${glowPulse})`;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         // Node circle
         if (completed) {
@@ -282,7 +645,7 @@ function renderMap() {
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = completed ? '#44dd66' : current ? '#ffcc44' : '#666677';
         ctx.lineWidth = 2;
         ctx.stroke();
 
