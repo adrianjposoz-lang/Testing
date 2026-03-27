@@ -549,43 +549,139 @@ function drawCastleTerrain(ctx, cx, cy, r) {
     ctx.fill();
 }
 
-function drawMapWorldBackground(ctx, w, h) {
-    // Base green grassland
-    ctx.fillStyle = '#1a3322';
-    ctx.fillRect(0, 0, w, h);
+// Simple seeded pseudo-random for consistent terrain
+function terrainNoise(x, y) {
+    const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+    return n - Math.floor(n);
+}
 
-    // Grass texture - subtle pixel variation
-    for (let gx = 0; gx < w; gx += 8) {
-        for (let gy = 0; gy < h; gy += 8) {
-            const n = Math.sin(gx * 0.7 + gy * 0.5) * 0.5 + Math.sin(gx * 0.3 - gy * 0.8) * 0.5;
-            const shade = Math.floor(n * 8);
-            const g = 0x33 + shade;
-            ctx.fillStyle = `rgb(${0x1a + shade},${g},${0x22 + shade})`;
-            ctx.fillRect(gx, gy, 8, 8);
+// Elevation map: higher = higher terrain. Uses smooth noise-like function
+function getElevation(x, y) {
+    // Large scale rolling terrain
+    let e = Math.sin(x * 0.008 + 1.2) * Math.cos(y * 0.006 + 0.8) * 0.4;
+    e += Math.sin(x * 0.015 - 0.5) * Math.sin(y * 0.012 + 2.1) * 0.25;
+    e += Math.cos(x * 0.004 + y * 0.003) * 0.35;
+
+    // Mountain ridge across upper portion
+    const mtDist = Math.abs(y - 60) / 60;
+    if (mtDist < 1) e += (1 - mtDist) * 0.8;
+
+    // Secondary ridge upper-right (near stages 9-10)
+    const ridge2 = Math.abs(y - 250 + Math.sin(x * 0.01) * 40) / 80;
+    if (x > 550 && ridge2 < 1) e += (1 - ridge2) * 0.4;
+
+    // Valley/lowlands in center-bottom (stages 1-3 area)
+    const valDist = Math.sqrt((x - 200) ** 2 + (y - 480) ** 2) / 200;
+    if (valDist < 1) e -= (1 - valDist) * 0.3;
+
+    return e;
+}
+
+function drawMapWorldBackground(ctx, w, h) {
+    // Render elevation-based terrain in 6x6 pixel blocks
+    for (let px = 0; px < w; px += 6) {
+        for (let py = 0; py < h; py += 6) {
+            const e = getElevation(px, py);
+            const jitter = terrainNoise(px, py) * 6 - 3;
+            let r, g, b;
+
+            if (e > 0.85) {
+                // Snow-capped peaks
+                r = 180 + jitter; g = 190 + jitter; b = 195 + jitter;
+            } else if (e > 0.65) {
+                // Rocky mountain
+                r = 70 + jitter; g = 65 + jitter; b = 75 + jitter;
+            } else if (e > 0.45) {
+                // Highland / dark hills
+                r = 35 + jitter; g = 55 + jitter * 1.5; b = 30 + jitter;
+            } else if (e > 0.2) {
+                // Mid-elevation grassland
+                r = 30 + jitter; g = 65 + jitter * 1.2; b = 35 + jitter;
+            } else if (e > 0.0) {
+                // Lowland grass - lighter green
+                r = 38 + jitter; g = 75 + jitter; b = 42 + jitter;
+            } else if (e > -0.15) {
+                // Low plains - yellow-green
+                r = 50 + jitter; g = 78 + jitter; b = 38 + jitter;
+            } else {
+                // Lowest - brownish (near water level)
+                r = 55 + jitter; g = 65 + jitter; b = 35 + jitter;
+            }
+
+            ctx.fillStyle = `rgb(${Math.max(0,Math.min(255,r|0))},${Math.max(0,Math.min(255,g|0))},${Math.max(0,Math.min(255,b|0))})`;
+            ctx.fillRect(px, py, 6, 6);
         }
     }
 
-    // Lighter grass patches (meadows)
-    const meadows = [
-        { x: 150, y: 350, rx: 80, ry: 50 },
-        { x: 500, y: 300, rx: 70, ry: 45 },
-        { x: 350, y: 500, rx: 90, ry: 40 },
-        { x: 650, y: 420, rx: 60, ry: 35 },
-    ];
-    for (const m of meadows) {
-        ctx.fillStyle = 'rgba(40,70,35,0.6)';
-        ctx.beginPath();
-        ctx.ellipse(m.x, m.y, m.rx, m.ry, 0.2, 0, Math.PI * 2);
-        ctx.fill();
+    // Mountain shading - add shadow/highlight to peaks
+    for (let px = 0; px < w; px += 6) {
+        for (let py = 0; py < h; py += 6) {
+            const e = getElevation(px, py);
+            const eRight = getElevation(px + 8, py);
+            const eDown = getElevation(px, py + 8);
+            // Light from top-left: if we're higher than right/below, we're lit
+            if (e > 0.5) {
+                const slopeR = e - eRight;
+                const slopeD = e - eDown;
+                if (slopeR > 0.02 || slopeD > 0.02) {
+                    ctx.fillStyle = `rgba(255,255,255,${Math.min(0.12, (slopeR + slopeD) * 0.4)})`;
+                    ctx.fillRect(px, py, 6, 6);
+                } else if (slopeR < -0.02 || slopeD < -0.02) {
+                    ctx.fillStyle = `rgba(0,0,0,${Math.min(0.15, Math.abs(slopeR + slopeD) * 0.4)})`;
+                    ctx.fillRect(px, py, 6, 6);
+                }
+            }
+        }
     }
 
-    // Dirt/brown patches (paths between areas)
-    ctx.fillStyle = '#3a2a1a';
+    // River winding through the low terrain
+    ctx.lineCap = 'round';
+    // River shadow
+    ctx.strokeStyle = '#0a2a3a';
     ctx.lineWidth = 12;
-    ctx.strokeStyle = '#3a2a1a';
+    ctx.beginPath();
+    ctx.moveTo(-10, 555);
+    ctx.bezierCurveTo(80, 540, 180, 560, 280, 545);
+    ctx.bezierCurveTo(380, 530, 430, 555, 530, 540);
+    ctx.bezierCurveTo(630, 525, 720, 555, 810, 545);
+    ctx.stroke();
+    // River body
+    ctx.strokeStyle = '#1a4a6a';
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(-10, 555);
+    ctx.bezierCurveTo(80, 540, 180, 560, 280, 545);
+    ctx.bezierCurveTo(380, 530, 430, 555, 530, 540);
+    ctx.bezierCurveTo(630, 525, 720, 555, 810, 545);
+    ctx.stroke();
+    // River highlight
+    ctx.strokeStyle = '#2a6a8a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-10, 553);
+    ctx.bezierCurveTo(80, 538, 180, 558, 280, 543);
+    ctx.bezierCurveTo(380, 528, 430, 553, 530, 538);
+    ctx.bezierCurveTo(630, 523, 720, 553, 810, 543);
+    ctx.stroke();
+    // Animated shimmer
+    ctx.strokeStyle = `rgba(120,200,240,${0.12 + Math.sin(frame * 0.04) * 0.08})`;
+    ctx.lineWidth = 1;
+    for (let j = 0; j < 2; j++) {
+        ctx.beginPath();
+        for (let x = 0; x < w; x += 8) {
+            const baseY = 555 - Math.sin(x * 0.008) * 15 + Math.sin(x * 0.015 + 1) * 8;
+            const wy = baseY + j * 3 + Math.sin((x + frame * 2) * 0.12) * 1.5;
+            if (x === 0) ctx.moveTo(x, wy);
+            else ctx.lineTo(x, wy);
+        }
+        ctx.stroke();
+    }
+
+    // Dirt road connecting nodes - sits on top of terrain
+    ctx.strokeStyle = '#5a4530';
+    ctx.lineWidth = 10;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    // Main dirt road following the path
     ctx.beginPath();
     ctx.moveTo(80, 480);
     ctx.lineTo(200, 400);
@@ -598,132 +694,23 @@ function drawMapWorldBackground(ctx, w, h) {
     ctx.lineTo(620, 320);
     ctx.lineTo(700, 180);
     ctx.stroke();
-    // Dirt road texture
-    ctx.strokeStyle = '#4a3a2a';
-    ctx.lineWidth = 6;
+    // Road center line
+    ctx.strokeStyle = '#6a5a3a';
+    ctx.lineWidth = 2;
     ctx.setLineDash([4, 8]);
+    ctx.beginPath();
+    ctx.moveTo(80, 480);
+    ctx.lineTo(200, 400);
+    ctx.lineTo(320, 460);
+    ctx.lineTo(440, 380);
+    ctx.lineTo(400, 260);
+    ctx.lineTo(280, 200);
+    ctx.lineTo(400, 140);
+    ctx.lineTo(540, 200);
+    ctx.lineTo(620, 320);
+    ctx.lineTo(700, 180);
     ctx.stroke();
     ctx.setLineDash([]);
-
-    // River flowing across the map (between stages 3-5 area)
-    ctx.strokeStyle = '#1a4a6a';
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(-10, 520);
-    ctx.bezierCurveTo(100, 530, 250, 490, 350, 520);
-    ctx.bezierCurveTo(450, 550, 550, 480, 700, 500);
-    ctx.bezierCurveTo(750, 490, 780, 510, 810, 500);
-    ctx.stroke();
-    // River highlight
-    ctx.strokeStyle = '#2a6a8a';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(-10, 518);
-    ctx.bezierCurveTo(100, 528, 250, 488, 350, 518);
-    ctx.bezierCurveTo(450, 548, 550, 478, 700, 498);
-    ctx.bezierCurveTo(750, 488, 780, 508, 810, 498);
-    ctx.stroke();
-    // Animated water shimmer
-    ctx.strokeStyle = `rgba(100,180,220,${0.15 + Math.sin(frame * 0.04) * 0.1})`;
-    ctx.lineWidth = 2;
-    for (let j = 0; j < 3; j++) {
-        ctx.beginPath();
-        for (let x = 0; x < w; x += 6) {
-            const baseY = 520 + Math.sin(x * 0.01 + 1) * 30 - Math.sin(x * 0.005) * 20;
-            const wy = baseY + j * 3 + Math.sin((x + frame * 3) * 0.1) * 2;
-            if (x === 0) ctx.moveTo(x, wy);
-            else ctx.lineTo(x, wy);
-        }
-        ctx.stroke();
-    }
-
-    // Mountain range across top of map
-    ctx.fillStyle = '#2a2a3a';
-    for (let i = 0; i < 12; i++) {
-        const mx = i * 75 - 20;
-        const mh = 40 + Math.sin(i * 1.8) * 25 + Math.sin(i * 0.7) * 15;
-        const mw = 60 + Math.sin(i * 2.3) * 20;
-        ctx.beginPath();
-        ctx.moveTo(mx - mw / 2, 80);
-        ctx.lineTo(mx, 80 - mh);
-        ctx.lineTo(mx + mw / 2, 80);
-        ctx.fill();
-    }
-    // Snow caps
-    ctx.fillStyle = '#889999';
-    for (let i = 0; i < 12; i++) {
-        const mx = i * 75 - 20;
-        const mh = 40 + Math.sin(i * 1.8) * 25 + Math.sin(i * 0.7) * 15;
-        const mw = 60 + Math.sin(i * 2.3) * 20;
-        ctx.beginPath();
-        ctx.moveTo(mx - mw * 0.15, 80 - mh + mh * 0.25);
-        ctx.lineTo(mx, 80 - mh);
-        ctx.lineTo(mx + mw * 0.15, 80 - mh + mh * 0.25);
-        ctx.fill();
-    }
-
-    // Hills (rolling bumps across terrain)
-    const hills = [
-        { x: 50, y: 380, rx: 60, ry: 20, c: '#1e3a25' },
-        { x: 600, y: 450, rx: 70, ry: 18, c: '#1e3825' },
-        { x: 720, y: 350, rx: 50, ry: 15, c: '#1c3622' },
-        { x: 180, y: 280, rx: 55, ry: 16, c: '#1e3a28' },
-        { x: 550, y: 140, rx: 45, ry: 14, c: '#1a3424' },
-        { x: 130, y: 160, rx: 65, ry: 18, c: '#1c3826' },
-    ];
-    for (const h of hills) {
-        ctx.fillStyle = h.c;
-        ctx.beginPath();
-        ctx.ellipse(h.x, h.y, h.rx, h.ry, 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // Scattered trees in background (small pixel trees)
-    const bgTrees = [
-        { x: 30, y: 350 }, { x: 55, y: 360 }, { x: 140, y: 320 },
-        { x: 170, y: 280 }, { x: 520, y: 450 }, { x: 580, y: 420 },
-        { x: 650, y: 380 }, { x: 710, y: 400 }, { x: 130, y: 170 },
-        { x: 160, y: 150 }, { x: 750, y: 280 }, { x: 770, y: 300 },
-        { x: 10, y: 250 }, { x: 40, y: 230 }, { x: 580, y: 100 },
-        { x: 200, y: 140 }, { x: 470, y: 460 }, { x: 690, y: 140 },
-    ];
-    for (const t of bgTrees) {
-        ctx.fillStyle = '#3a2a15';
-        ctx.fillRect(t.x - 1, t.y + 2, 2, 6);
-        ctx.fillStyle = '#1a4a1a';
-        ctx.beginPath();
-        ctx.arc(t.x, t.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#2a5a2a';
-        ctx.beginPath();
-        ctx.arc(t.x + 1, t.y - 1, 3, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // Rocky outcrops (small gray patches)
-    const rocks = [
-        { x: 460, y: 150 }, { x: 300, y: 350 }, { x: 680, y: 260 },
-        { x: 100, y: 440 }, { x: 550, y: 350 }, { x: 370, y: 420 },
-    ];
-    for (const r of rocks) {
-        ctx.fillStyle = '#3a3a3a';
-        ctx.fillRect(r.x - 4, r.y - 2, 8, 5);
-        ctx.fillStyle = '#4a4a4a';
-        ctx.fillRect(r.x - 2, r.y - 3, 5, 3);
-    }
-
-    // Small flowers/grass tufts
-    for (let i = 0; i < 30; i++) {
-        const fx = (i * 127 + 33) % w;
-        const fy = 100 + (i * 83 + 17) % (h - 150);
-        ctx.fillStyle = i % 3 === 0 ? '#4a7a3a' : i % 3 === 1 ? '#5a8a4a' : '#3a6a2a';
-        ctx.fillRect(fx, fy, 3, 3);
-        if (i % 4 === 0) {
-            ctx.fillStyle = '#cc8844';
-            ctx.fillRect(fx + 1, fy - 1, 1, 1);
-        }
-    }
 }
 
 function renderMap() {
@@ -771,32 +758,6 @@ function renderMap() {
             ctx.restore();
         }
     }
-
-    // Dirt road path connecting nodes
-    ctx.strokeStyle = '#5a4a30';
-    ctx.lineWidth = 8;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.setLineDash([]);
-    ctx.beginPath();
-    for (let i = 1; i <= 10; i++) {
-        const pos = getMapNodePos(i);
-        if (i === 1) ctx.moveTo(pos.x, pos.y);
-        else ctx.lineTo(pos.x, pos.y);
-    }
-    ctx.stroke();
-    // Road detail lines
-    ctx.strokeStyle = '#6a5a3a';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([6, 10]);
-    ctx.beginPath();
-    for (let i = 1; i <= 10; i++) {
-        const pos = getMapNodePos(i);
-        if (i === 1) ctx.moveTo(pos.x, pos.y);
-        else ctx.lineTo(pos.x, pos.y);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
 
     // Nodes
     for (let i = 1; i <= 10; i++) {
