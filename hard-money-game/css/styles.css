@@ -181,6 +181,44 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 
 /* =============================================================
+   TUTORIAL SCREEN
+   ============================================================= */
+.tutorial-overlay {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.tutorial-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 600px;
+  margin: 16px 0;
+}
+
+.tutorial-section {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--gold-dark);
+  padding: 12px;
+}
+
+.tutorial-section h3 {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.tutorial-section p {
+  font-size: 9px;
+  color: var(--gray);
+  line-height: 1.5;
+}
+
+/* =============================================================
    CUTSCENE
    ============================================================= */
 .cutscene-overlay {
@@ -1098,6 +1136,9 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   .boss-hp-bar { width: 200px; }
   .hp-bar { width: 120px; }
   .timer-bar { width: 100px; }
+  .tutorial-content {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 380px) {
@@ -1248,4 +1289,29 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   15% { opacity: 1; transform: translateX(-50%) translateY(0); }
   80% { opacity: 1; }
   100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* =============================================================
+   MUTE BUTTON
+   ============================================================= */
+.mute-btn {
+  font-size: 14px !important;
+  padding: 4px 8px !important;
+  margin-left: 12px;
+  background: transparent !important;
+  border: 1px solid var(--gold-dark) !important;
+  line-height: 1;
+}
+
+/* =============================================================
+   CODEX BADGE
+   ============================================================= */
+.codex-badge {
+  background: var(--red);
+  color: white;
+  font-size: 6px;
+  padding: 1px 4px;
+  margin-left: 4px;
+  vertical-align: top;
+  animation: pulse 1.5s infinite;
 }

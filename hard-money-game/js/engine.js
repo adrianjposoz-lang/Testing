@@ -17,6 +17,7 @@ export const state = {
     ownedItems: new Set(['helmet_none', 'armor_basic', 'sword_basic', 'cape_none']),
     inventory: { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0, gold_charm: 0 },
     codexUnlocked: new Set(),
+    codexViewed: new Set(),
     totalKills: 0,
     totalCorrect: 0,
     totalAnswered: 0,
@@ -875,6 +876,10 @@ export function showScreen(screenName) {
         case 'map':
             document.getElementById('map-screen').classList.remove('hidden');
             document.getElementById('map-gold').textContent = `Gold: ${state.gold}`;
+            // Show codex badge if there are unviewed entries
+            const unviewed = [...state.codexUnlocked].some(s => !state.codexViewed || !state.codexViewed.has(s));
+            const badge = document.getElementById('codex-badge');
+            if (badge) badge.classList.toggle('hidden', !unviewed);
             break;
         case 'combat':
             document.getElementById('combat-hud').classList.remove('hidden');
@@ -898,6 +903,9 @@ export function showScreen(screenName) {
         case 'complete':
             document.getElementById('complete-screen').classList.remove('hidden');
             break;
+        case 'tutorial':
+            document.getElementById('tutorial-screen').classList.remove('hidden');
+            break;
     }
 }
 
@@ -907,7 +915,8 @@ export function saveGame() {
         ...state,
         completedStages: [...state.completedStages],
         ownedItems: [...state.ownedItems],
-        codexUnlocked: [...state.codexUnlocked]
+        codexUnlocked: [...state.codexUnlocked],
+        codexViewed: [...state.codexViewed]
     };
     SaveSystem.save(data);
 }
@@ -923,6 +932,8 @@ export function loadGame() {
     state.ownedItems = new Set(data.ownedItems || ['helmet_none', 'armor_basic', 'sword_basic', 'cape_none']);
     state.inventory = data.inventory || { potion_hp: 0, potion_time: 0, scroll_hint: 0, shield_block: 0 };
     state.codexUnlocked = new Set(data.codexUnlocked || []);
+    state.codexViewed = new Set(data.codexViewed || []);
+    if (state.inventory.gold_charm === undefined) state.inventory.gold_charm = 0;
     state.totalKills = data.totalKills || 0;
     state.totalCorrect = data.totalCorrect || 0;
     state.totalAnswered = data.totalAnswered || 0;

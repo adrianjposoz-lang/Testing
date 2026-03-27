@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>The Ledger & The Sword</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>⚔️</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -29,6 +30,38 @@
             </div>
         </div>
 
+        <!-- Tutorial Screen -->
+        <div id="tutorial-screen" class="overlay tutorial-overlay hidden">
+            <h2 class="screen-title">HOW TO PLAY</h2>
+            <div class="tutorial-content">
+                <div class="tutorial-section">
+                    <h3>⚔️ COMBAT</h3>
+                    <p>Answer questions correctly to damage bosses. Wrong answers hurt YOU!</p>
+                </div>
+                <div class="tutorial-section">
+                    <h3>🔥 COMBOS</h3>
+                    <p>3 correct in a row = COMBO (bonus gold). 5 in a row = CRITICAL HIT (double damage)!</p>
+                </div>
+                <div class="tutorial-section">
+                    <h3>⏱️ TIMER</h3>
+                    <p>Answer before time runs out or the boss attacks!</p>
+                </div>
+                <div class="tutorial-section">
+                    <h3>💡 HINTS</h3>
+                    <p>Use hints to eliminate a wrong answer. Die twice on a boss? Unlimited hints!</p>
+                </div>
+                <div class="tutorial-section">
+                    <h3>🛒 SHOP</h3>
+                    <p>Spend gold on gear with real stat bonuses. Swords, armor, and consumables!</p>
+                </div>
+                <div class="tutorial-section">
+                    <h3>📖 CODEX</h3>
+                    <p>Each boss drops a Ledger fragment. Read them to master hard money lending!</p>
+                </div>
+            </div>
+            <button class="pixel-btn" id="btn-tutorial-continue">GOT IT!</button>
+        </div>
+
         <!-- Intro Cutscene -->
         <div id="cutscene-overlay" class="overlay cutscene-overlay hidden">
             <canvas id="cutscene-canvas" width="800" height="350"></canvas>
@@ -50,7 +83,7 @@
             <div class="map-footer">
                 <span class="gold-display" id="map-gold">Gold: 0</span>
                 <button class="pixel-btn small" id="btn-shop-from-map">SHOP</button>
-                <button class="pixel-btn small" id="btn-codex">CODEX</button>
+                <button class="pixel-btn small" id="btn-codex">CODEX <span id="codex-badge" class="codex-badge hidden">NEW</span></button>
                 <button class="pixel-btn small" id="btn-settings">SETTINGS</button>
             </div>
         </div>
@@ -100,6 +133,7 @@
             <div class="hint-container">
                 <button class="hint-btn" id="btn-hint">HINT (1 free)</button>
                 <button class="pixel-btn flee-btn" id="btn-flee">FLEE</button>
+                <button class="pixel-btn mute-btn" id="btn-mute">🔊</button>
             </div>
             <div class="explanation hidden" id="explanation-box">
                 <p id="explanation-text"></p>

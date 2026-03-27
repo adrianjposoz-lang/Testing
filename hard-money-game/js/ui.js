@@ -41,6 +41,9 @@ function wireEvents() {
         if (e.key === 'Enter') onNameConfirm();
     });
 
+    // Tutorial
+    document.getElementById('btn-tutorial-continue').addEventListener('click', onTutorialContinue);
+
     // Cutscene
     document.getElementById('cutscene-overlay').addEventListener('click', advanceCutscene);
     document.getElementById('btn-skip-cutscene').addEventListener('click', skipCutscene);
@@ -56,6 +59,7 @@ function wireEvents() {
     // Combat
     document.getElementById('btn-hint').addEventListener('click', useHint);
     document.getElementById('btn-flee').addEventListener('click', onFlee);
+    document.getElementById('btn-mute').addEventListener('click', toggleMute);
 
     // Victory
     document.getElementById('btn-victory-continue').addEventListener('click', onVictoryContinue);
@@ -130,6 +134,13 @@ function onNameConfirm() {
     state.playerName = name;
     try { audio.playMenuSelect(); } catch(e) {}
 
+    // Show tutorial screen before starting the intro cutscene
+    showScreen('tutorial');
+}
+
+function onTutorialContinue() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    // After tutorial, start the intro cutscene
     if (state.settings.skipCutscenes) {
         showScreen('map');
         try { audio.playMapMusic(); } catch(e) {}
@@ -1021,9 +1032,23 @@ function stopShopPreview() {
     clearInterval(shopPreviewInterval);
 }
 
+// ── Mute Toggle ──
+function toggleMute() {
+    try {
+        if (audio.isMuted()) {
+            audio.unmute();
+            document.getElementById('btn-mute').textContent = '🔊';
+        } else {
+            audio.mute();
+            document.getElementById('btn-mute').textContent = '🔇';
+        }
+    } catch(e) {}
+}
+
 // ── Codex ──
 function openCodex() {
     try { audio.playMenuSelect(); } catch(e) {}
+    state.codexViewed = new Set(state.codexUnlocked);
     const content = document.getElementById('codex-content');
     content.innerHTML = '';
 

@@ -63,11 +63,10 @@ export function startFight(stageNum) {
 
     try { audio.stopMusic(); audio.playBattleMusic(); } catch(e) {}
 
-    // Show boss taunt
-    showBossTaunt(boss.taunt);
-
-    // Delay first question so player reads the taunt
-    setTimeout(() => nextQuestion(), 2000);
+    // Show boss intro, then taunt
+    showBossIntro(boss.intro);
+    setTimeout(() => showBossTaunt(boss.taunt), 1800);
+    setTimeout(() => nextQuestion(), 3500);
 }
 
 // ── Next Question ──
@@ -492,6 +491,23 @@ function shakeScreen() {
     const container = document.getElementById('game-container');
     container.classList.add('shake');
     setTimeout(() => container.classList.remove('shake'), 400);
+}
+
+// ── Boss Intro ──
+function showBossIntro(text) {
+    const tauntEl = document.getElementById('boss-taunt');
+    if (!tauntEl) return;
+    tauntEl.textContent = text;
+    tauntEl.style.borderColor = '#aa8844';
+    tauntEl.style.color = '#ccbbaa';
+    tauntEl.classList.remove('hidden');
+    tauntEl.classList.remove('taunt-fade');
+    void tauntEl.offsetWidth;
+    tauntEl.classList.add('taunt-fade');
+    setTimeout(() => {
+        tauntEl.style.borderColor = '';
+        tauntEl.style.color = '';
+    }, 1800);
 }
 
 // ── Boss Taunts ──
