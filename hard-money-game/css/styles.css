@@ -2094,15 +2094,19 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .map-footer .pixel-btn {
-    font-size: 7px;
-    padding: 6px 8px;
-    min-height: 44px;
+    font-size: 6px;
+    padding: 5px 6px;
+    min-height: 36px;
     width: auto;
     max-width: none;
   }
 
   .gold-display {
-    font-size: 9px;
+    font-size: 8px;
+  }
+
+  .hp-display, .potion-display {
+    font-size: 8px;
   }
 
   .map-overlay .screen-title {
@@ -2618,6 +2622,10 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     width: 90%;
     max-width: 240px;
     padding: 10px 12px;
+  }
+
+  #glossary-search {
+    max-width: 100%;
   }
 
   /* --- Boss taunt --- */

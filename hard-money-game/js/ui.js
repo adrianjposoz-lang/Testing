@@ -88,7 +88,6 @@ function wireEvents() {
 
     // Study Mode
     document.getElementById('btn-close-study').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
-    document.getElementById('btn-study-next').addEventListener('click', studyNextQuestion);
 
     // Glossary
     document.getElementById('btn-close-glossary').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
@@ -1391,9 +1390,11 @@ function startStudyTopic(stageNum) {
 }
 
 function showStudyQuestion() {
+    studyAnswered = false;
+
     if (studyIndex >= studyQuestions.length) {
         // All questions done — show summary
-        const pct = Math.round((studyCorrect / studyTotal) * 100);
+        const pct = studyTotal > 0 ? Math.round((studyCorrect / studyTotal) * 100) : 0;
         document.getElementById('study-question').textContent = `Topic complete! You got ${studyCorrect}/${studyTotal} correct (${pct}%).`;
         document.getElementById('study-answers').innerHTML = '';
         document.getElementById('study-feedback').classList.add('hidden');
@@ -1422,7 +1423,12 @@ function showStudyQuestion() {
     });
 }
 
+let studyAnswered = false;
+
 function onStudyAnswer(index, q) {
+    if (studyAnswered) return; // prevent double-clicks
+    studyAnswered = true;
+
     const correct = index === q.correctIndex;
     studyTotal++;
     if (correct) studyCorrect++;
@@ -1446,12 +1452,7 @@ function onStudyAnswer(index, q) {
     const nextBtn = document.getElementById('btn-study-next');
     nextBtn.textContent = 'NEXT QUESTION';
     nextBtn.classList.remove('hidden');
-    nextBtn.onclick = null; // clear any old handler
-}
-
-function studyNextQuestion() {
-    studyIndex++;
-    showStudyQuestion();
+    nextBtn.onclick = () => { studyIndex++; showStudyQuestion(); };
 }
 
 function shuffleStudy(arr) {
