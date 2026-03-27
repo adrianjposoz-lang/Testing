@@ -126,10 +126,13 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   text-transform: uppercase;
 }
 
-.pixel-btn:hover {
-  background: var(--gold-dark);
-  color: #000;
-  box-shadow: 0 0 12px var(--gold-glow);
+@media (hover: hover) {
+  .pixel-btn:hover {
+    background: var(--gold-dark);
+    color: #000;
+    box-shadow: 0 0 12px var(--gold-glow);
+  }
+}
 }
 
 .pixel-btn.small {
@@ -541,10 +544,17 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   line-height: 1.4;
 }
 
-.answer-btn:hover:not(:disabled) {
+@media (hover: hover) {
+  .answer-btn:hover:not(:disabled) {
+    background: var(--gold-dark);
+    color: #000;
+    box-shadow: 0 0 10px var(--gold-glow);
+  }
+}
+
+.answer-btn:active:not(:disabled) {
   background: var(--gold-dark);
   color: #000;
-  box-shadow: 0 0 10px var(--gold-glow);
 }
 
 .answer-btn:disabled {
