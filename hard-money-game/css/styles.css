@@ -1214,3 +1214,38 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border-color: var(--gold-dark) !important;
   font-size: 9px !important;
 }
+
+/* =============================================================
+   BOSS DEFEAT QUOTE
+   ============================================================= */
+.boss-defeat-quote {
+  color: var(--gold-dark);
+  font-style: italic;
+  font-size: 8px;
+  display: block;
+  margin-top: 6px;
+}
+
+/* =============================================================
+   CODEX UNLOCK NOTIFICATION
+   ============================================================= */
+.codex-notif {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30,80,30,0.9);
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  padding: 8px 16px;
+  z-index: 100;
+  animation: notifSlide 4s ease forwards;
+}
+@keyframes notifSlide {
+  0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}

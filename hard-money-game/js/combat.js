@@ -13,9 +13,12 @@ export function startFight(stageNum) {
     combat.bossHp = boss.hp;
     combat.bossMaxHp = boss.hp;
     // Scale player HP: base 5, +1 at stage 5, +1 at stage 8
+    // Equipment bonuses: plate/golden armor = +1 HP, horned helmet = +1 HP
     const bonusHp = (stageNum >= 8 ? 2 : stageNum >= 5 ? 1 : 0);
-    combat.playerHp = 5 + bonusHp;
-    combat.playerMaxHp = 5 + bonusHp;
+    const armorHp = (state.equipment.armor === 'plate' || state.equipment.armor === 'golden') ? 1 : 0;
+    const helmetHp = (state.equipment.helmet === 'horned') ? 1 : 0;
+    combat.playerHp = 5 + bonusHp + armorHp + helmetHp;
+    combat.playerMaxHp = 5 + bonusHp + armorHp + helmetHp;
     combat.combo = 0;
     combat.maxCombo = 0;
     combat.goldEarned = 0;
@@ -23,7 +26,10 @@ export function startFight(stageNum) {
     combat.hintsRemaining = 1;
     combat.shieldsRemaining = state.inventory.shield_block > 0 ? 1 : 0;
     combat.bonusTime = state.inventory.potion_time > 0 ? 5 : 0;
-    combat.goldMultiplier = state.inventory.gold_charm > 0 ? 1.25 : 1;
+    // Gold multiplier: gold charm + golden sword bonus
+    let goldMult = state.inventory.gold_charm > 0 ? 1.25 : 1;
+    if (state.equipment.sword === 'golden') goldMult += 0.1;
+    combat.goldMultiplier = goldMult;
     combat.isAnswering = false;
     combat.showingExplanation = false;
     combat.eliminatedIndex = -1;
@@ -198,8 +204,9 @@ function onCorrectAnswer() {
     let isCritical = false;
 
     if (combat.combo >= 5) {
-        // Critical hit!
+        // Critical hit! Special swords deal bonus damage
         damage = 2;
+        if (state.equipment.sword === 'flame' || state.equipment.sword === 'ice') damage = 3;
         goldGain += 15;
         isCritical = true;
         try { audio.playCritical(); } catch(e) {}
@@ -346,10 +353,21 @@ function onBossDefeated() {
     document.getElementById('fragment-recovered').style.display = state.endlessMode ? 'none' : 'block';
     document.getElementById('battle-stats').innerHTML =
         `Questions: ${state.totalCorrect}/${combat.questionsAnswered} correct<br>` +
-        `Best Combo: ${combat.maxCombo}x`;
+        `Best Combo: ${combat.maxCombo}x<br>` +
+        `<span class="boss-defeat-quote">"${boss.defeat}"</span>`;
+
+    // Codex notification
+    if (!state.endlessMode) {
+        const notif = document.createElement('div');
+        notif.className = 'codex-notif';
+        notif.textContent = 'New Codex entry unlocked!';
+        document.getElementById('victory-screen').appendChild(notif);
+        setTimeout(() => notif.remove(), 4000);
+    }
 
     saveGame();
     showScreen('victory');
+    try { audio.playVictoryFanfare(); } catch(e) {}
 }
 
 // ── Player Death ──

@@ -21,6 +21,13 @@ export function bootGame() {
     engineInit();
     wireEvents();
     showScreen('title');
+    // Title music starts on first click (audio needs user interaction)
+    document.addEventListener('click', () => {
+        try {
+            audio.init();
+            if (state.screen === 'title') audio.playTitleMusic();
+        } catch(e) {}
+    }, { once: true });
 }
 
 // ── Wire All Event Listeners ──
@@ -56,6 +63,7 @@ function wireEvents() {
 
     // Death
     document.getElementById('btn-retry').addEventListener('click', onRetry);
+    document.getElementById('btn-death-map').addEventListener('click', onReturnToMap);
 
     // Shop
     document.getElementById('btn-leave-shop').addEventListener('click', leaveShop);
@@ -103,7 +111,7 @@ function wireEvents() {
 
 // ── Title Screen ──
 function onStartClick() {
-    try { audio.init(); audio.playMenuSelect(); } catch(e) {}
+    try { audio.init(); audio.stopMusic(); audio.playMenuSelect(); } catch(e) {}
 
     if (SaveSystem.hasSave()) {
         loadGame();
