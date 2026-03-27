@@ -133,7 +133,6 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     box-shadow: 0 0 12px var(--gold-glow);
   }
 }
-}
 
 .pixel-btn.small {
   font-size: 9px;
@@ -1985,7 +1984,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .question-topic {
-    font-size: 5px;
+    font-size: 6px;
     margin-bottom: 0;
   }
 
@@ -2387,7 +2386,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   .leaderboard-table th {
-    font-size: 5px;
+    font-size: 6px;
     padding: 4px 3px;
   }
 
@@ -2584,7 +2583,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     grid-template-columns: repeat(2, 1fr);
     gap: 4px;
   }
-  .stat-label { font-size: 5px; }
+  .stat-label { font-size: 6px; }
   .stat-val { font-size: 9px; }
   .achievements-grid {
     grid-template-columns: 1fr;
@@ -2592,6 +2591,6 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   .achievement-card { padding: 5px 6px; }
   .ach-icon { font-size: 14px; }
   .ach-name { font-size: 6px; }
-  .ach-desc { font-size: 5px; }
+  .ach-desc { font-size: 6px; }
   .question-topic { font-size: 6px; }
 }
