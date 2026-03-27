@@ -3,6 +3,7 @@ import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as e
 import { startFight, useHint, useHealthPotion, updatePotionButton, selectAnswer, startEndlessFight, fleeFight } from './combat.js';
 import { BOSS_DATA, INTRO_CUTSCENE, ENDING_CUTSCENE, CODEX_ENTRIES } from './cutscenes.js';
 import { SHOP_ITEMS, getRandomQuote } from './shop.js';
+import { QUESTIONS, STAGE_TOPICS } from './questions.js';
 import { drawKnight, drawShopkeeper, drawBoss, drawBackground, drawGoldCoin } from './sprites.js';
 import { audio } from './audio.js';
 import { SaveSystem } from './save.js';
@@ -51,6 +52,8 @@ function wireEvents() {
     // Map
     document.getElementById('btn-shop-from-map').addEventListener('click', () => openShop());
     document.getElementById('btn-codex').addEventListener('click', openCodex);
+    document.getElementById('btn-study').addEventListener('click', openStudyMode);
+    document.getElementById('btn-glossary').addEventListener('click', openGlossary);
     document.getElementById('btn-settings').addEventListener('click', () => showScreen('settings'));
 
     // Map node clicks - use canvas click
@@ -82,6 +85,14 @@ function wireEvents() {
     // Stats
     document.getElementById('btn-stats').addEventListener('click', openStats);
     document.getElementById('btn-close-stats').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
+
+    // Study Mode
+    document.getElementById('btn-close-study').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
+    document.getElementById('btn-study-next').addEventListener('click', studyNextQuestion);
+
+    // Glossary
+    document.getElementById('btn-close-glossary').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
+    document.getElementById('glossary-search').addEventListener('input', filterGlossary);
 
     // Leaderboard
     document.getElementById('btn-leaderboard').addEventListener('click', () => openLeaderboard('map'));
@@ -1331,4 +1342,201 @@ function shareVictory() {
             }, 2000);
         });
     }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STUDY MODE
+// ══════════════════════════════════════════════════════════════
+let studyQuestions = [];
+let studyIndex = 0;
+let studyTopic = 0;
+let studyCorrect = 0;
+let studyTotal = 0;
+
+function openStudyMode() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    // Reset study area
+    document.getElementById('study-area').classList.add('hidden');
+    document.getElementById('btn-study-next').classList.add('hidden');
+
+    // Build topic selection grid
+    const container = document.getElementById('study-topic-select');
+    container.innerHTML = '<p class="study-intro">Choose a topic to practice. No timer, no combat — just learning.</p>';
+
+    for (let i = 1; i <= 10; i++) {
+        const topicName = STAGE_TOPICS[i];
+        const count = QUESTIONS.filter(q => q.stage === i).length;
+        const btn = document.createElement('button');
+        btn.className = 'pixel-btn study-topic-btn';
+        btn.innerHTML = `<span class="study-topic-num">Stage ${i}</span> ${topicName} <span class="study-topic-count">(${count} questions)</span>`;
+        btn.addEventListener('click', () => startStudyTopic(i));
+        container.appendChild(btn);
+    }
+
+    showScreen('study');
+}
+
+function startStudyTopic(stageNum) {
+    try { audio.playMenuSelect(); } catch(e) {}
+    studyTopic = stageNum;
+    studyQuestions = shuffleStudy(QUESTIONS.filter(q => q.stage === stageNum));
+    studyIndex = 0;
+    studyCorrect = 0;
+    studyTotal = 0;
+
+    document.getElementById('study-topic-select').innerHTML = '';
+    document.getElementById('study-area').classList.remove('hidden');
+    document.getElementById('study-topic-label').textContent = STAGE_TOPICS[stageNum];
+    showStudyQuestion();
+}
+
+function showStudyQuestion() {
+    if (studyIndex >= studyQuestions.length) {
+        // All questions done — show summary
+        const pct = Math.round((studyCorrect / studyTotal) * 100);
+        document.getElementById('study-question').textContent = `Topic complete! You got ${studyCorrect}/${studyTotal} correct (${pct}%).`;
+        document.getElementById('study-answers').innerHTML = '';
+        document.getElementById('study-feedback').classList.add('hidden');
+        document.getElementById('study-progress').textContent = `${studyTotal}/${studyQuestions.length}`;
+        const nextBtn = document.getElementById('btn-study-next');
+        nextBtn.textContent = 'PICK ANOTHER TOPIC';
+        nextBtn.classList.remove('hidden');
+        nextBtn.onclick = () => openStudyMode();
+        return;
+    }
+
+    const q = studyQuestions[studyIndex];
+    document.getElementById('study-progress').textContent = `${studyIndex + 1}/${studyQuestions.length}`;
+    document.getElementById('study-question').textContent = q.question;
+    document.getElementById('study-feedback').classList.add('hidden');
+    document.getElementById('btn-study-next').classList.add('hidden');
+
+    const container = document.getElementById('study-answers');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => onStudyAnswer(i, q));
+        container.appendChild(btn);
+    });
+}
+
+function onStudyAnswer(index, q) {
+    const correct = index === q.correctIndex;
+    studyTotal++;
+    if (correct) studyCorrect++;
+
+    // Highlight answers
+    const buttons = document.querySelectorAll('#study-answers .answer-btn');
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correctIndex) btn.classList.add('correct');
+        if (i === index && !correct) btn.classList.add('wrong');
+    });
+
+    // Show feedback
+    const feedback = document.getElementById('study-feedback');
+    feedback.classList.remove('hidden');
+    feedback.innerHTML = correct
+        ? `<span class="study-correct-text">✓ Correct!</span><br><span class="study-explain">${q.explanation}</span>`
+        : `<span class="study-wrong-text">✗ Incorrect.</span><br><span class="study-explain">${q.explanation}</span>`;
+
+    // Show next button
+    const nextBtn = document.getElementById('btn-study-next');
+    nextBtn.textContent = 'NEXT QUESTION';
+    nextBtn.classList.remove('hidden');
+    nextBtn.onclick = null; // clear any old handler
+}
+
+function studyNextQuestion() {
+    studyIndex++;
+    showStudyQuestion();
+}
+
+function shuffleStudy(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GLOSSARY
+// ══════════════════════════════════════════════════════════════
+const GLOSSARY_TERMS = [
+    { term: 'Hard Money Loan', def: 'A short-term loan secured by real property, funded by private investors rather than banks.' },
+    { term: 'Principal', def: 'The original amount of money borrowed, before interest is added.' },
+    { term: 'Interest Rate', def: 'The percentage charged by the lender for borrowing money, usually expressed annually.' },
+    { term: 'APR (Annual Percentage Rate)', def: 'The total yearly cost of borrowing, including interest and fees.' },
+    { term: 'Points', def: 'Upfront fees charged by the lender. One point equals 1% of the loan amount.' },
+    { term: 'Term', def: 'The length of time the borrower has to repay the loan.' },
+    { term: 'Collateral', def: 'An asset (usually real property) pledged to secure a loan. The lender can seize it if the borrower defaults.' },
+    { term: 'Lien', def: 'A legal claim on a property used as security for a debt.' },
+    { term: 'First Lien / Second Lien', def: 'Priority order of claims on a property. First lien gets paid first in a foreclosure sale.' },
+    { term: 'Deed of Trust', def: 'A legal document that secures a loan by giving the lender a claim on the property until the loan is repaid.' },
+    { term: 'LTV (Loan-to-Value)', def: 'The ratio of the loan amount to the property value. LTV = Loan ÷ Value. Lower LTV = less risk for lenders.' },
+    { term: 'ARV (After Repair Value)', def: 'The estimated value of a property after renovations are complete.' },
+    { term: 'The 70% Rule', def: 'A guideline: Max purchase price = (ARV × 70%) - Repair costs. Helps investors avoid overpaying.' },
+    { term: 'Appraisal', def: 'A professional assessment of a property\'s market value.' },
+    { term: 'BPO (Broker Price Opinion)', def: 'A less formal property valuation performed by a real estate broker instead of a licensed appraiser.' },
+    { term: 'Comparable Sales (Comps)', def: 'Recent sales of similar properties used to estimate a property\'s value.' },
+    { term: 'Escrow', def: 'A neutral third party that holds funds and documents during a real estate transaction until all conditions are met.' },
+    { term: 'Title', def: 'Legal ownership of a property. A "clean title" means no liens or disputes.' },
+    { term: 'Title Insurance', def: 'Insurance that protects against losses from defects in the title (unknown liens, ownership disputes).' },
+    { term: 'Closing Costs', def: 'Fees paid at the end of a real estate transaction — includes title fees, escrow fees, recording fees, etc.' },
+    { term: 'Default', def: 'Failure to meet the terms of a loan, typically by missing payments.' },
+    { term: 'Foreclosure', def: 'The legal process where a lender seizes a property after the borrower defaults.' },
+    { term: 'REO (Real Estate Owned)', def: 'Property owned by the lender after an unsuccessful foreclosure auction.' },
+    { term: 'Judicial Foreclosure', def: 'Foreclosure that requires going through the court system. Slower but offers more borrower protections.' },
+    { term: 'Non-Judicial Foreclosure', def: 'Foreclosure handled outside the courts using a power of sale clause. Faster for lenders.' },
+    { term: 'Deficiency Judgment', def: 'A court order requiring the borrower to pay the remaining debt if the foreclosure sale doesn\'t cover the full loan balance.' },
+    { term: 'Underwriting', def: 'The process of evaluating a borrower and property to determine loan risk and terms.' },
+    { term: 'Exit Strategy', def: 'The borrower\'s plan to repay the loan — usually selling the property or refinancing.' },
+    { term: 'Skin in the Game', def: 'The borrower\'s own money invested in the deal (down payment + cash reserves). More skin = less lender risk.' },
+    { term: 'Liquidity', def: 'The amount of cash or easily accessible funds a borrower has available.' },
+    { term: 'Draw Schedule', def: 'A plan for disbursing renovation funds in stages as work is completed and inspected.' },
+    { term: 'Prepayment Penalty', def: 'A fee charged when a borrower pays off the loan before the agreed term ends.' },
+    { term: 'Promissory Note', def: 'A written promise by the borrower to repay the loan under specified terms.' },
+    { term: 'Bridge Loan', def: 'A short-term loan used to "bridge" the gap between buying a new property and selling an existing one.' },
+    { term: 'Holding Costs', def: 'Ongoing expenses while owning a property — mortgage payments, taxes, insurance, utilities, maintenance.' },
+    { term: 'Capital Stack', def: 'The layers of financing used in a real estate deal — from senior debt to mezzanine debt to equity.' },
+    { term: 'Equity', def: 'The difference between a property\'s value and what is owed on it. Equity = Value - Debt.' },
+    { term: 'Private Lender', def: 'An individual or company that lends money using private capital, not bank deposits.' },
+    { term: 'Maturity Date', def: 'The date when the loan must be fully repaid.' },
+    { term: 'Extension Fee', def: 'A fee charged to extend the loan term beyond the original maturity date.' },
+];
+
+let glossaryFiltered = [...GLOSSARY_TERMS];
+
+function openGlossary() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    document.getElementById('glossary-search').value = '';
+    glossaryFiltered = [...GLOSSARY_TERMS];
+    renderGlossary();
+    showScreen('glossary');
+}
+
+function renderGlossary() {
+    const list = document.getElementById('glossary-list');
+    list.innerHTML = glossaryFiltered.map(g =>
+        `<div class="glossary-item">` +
+        `<div class="glossary-term">${g.term}</div>` +
+        `<div class="glossary-def">${g.def}</div>` +
+        `</div>`
+    ).join('');
+}
+
+function filterGlossary() {
+    const query = document.getElementById('glossary-search').value.toLowerCase().trim();
+    if (!query) {
+        glossaryFiltered = [...GLOSSARY_TERMS];
+    } else {
+        glossaryFiltered = GLOSSARY_TERMS.filter(g =>
+            g.term.toLowerCase().includes(query) || g.def.toLowerCase().includes(query)
+        );
+    }
+    renderGlossary();
 }

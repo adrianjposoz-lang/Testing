@@ -962,6 +962,12 @@ export function showScreen(screenName) {
         case 'stats':
             document.getElementById('stats-screen').classList.remove('hidden');
             break;
+        case 'study':
+            document.getElementById('study-screen').classList.remove('hidden');
+            break;
+        case 'glossary':
+            document.getElementById('glossary-screen').classList.remove('hidden');
+            break;
     }
 }
 

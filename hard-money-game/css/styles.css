@@ -1007,6 +1007,144 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 
 /* =============================================================
+   STUDY MODE
+   ============================================================= */
+.study-overlay {
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.study-intro {
+  font-size: 9px;
+  color: var(--gray);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.study-topic-btn {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  margin: 4px auto;
+  text-align: left;
+  font-size: 8px !important;
+  padding: 10px 14px !important;
+}
+
+.study-topic-num {
+  color: var(--gold);
+  margin-right: 6px;
+}
+
+.study-topic-count {
+  color: var(--gray);
+  font-size: 7px;
+}
+
+.study-area {
+  max-width: 550px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.study-topic-label {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.study-progress {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--gray);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.study-question {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--white);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+#study-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+#study-answers .answer-btn {
+  max-width: 100%;
+  min-width: unset;
+  width: 100%;
+  text-align: left;
+}
+
+.study-feedback {
+  background: rgba(0,0,0,0.4);
+  border-left: 3px solid var(--gold);
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.study-correct-text { color: var(--green); font-weight: bold; }
+.study-wrong-text { color: var(--red); font-weight: bold; }
+.study-explain { color: var(--gold); font-style: italic; font-size: 8px; }
+
+/* =============================================================
+   GLOSSARY
+   ============================================================= */
+.glossary-overlay {
+  gap: 10px;
+}
+
+.glossary-search-box {
+  text-align: center;
+  padding: 0 16px;
+}
+
+#glossary-search {
+  width: 100%;
+  max-width: 400px;
+}
+
+.glossary-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 60vh;
+  padding: 0 16px;
+}
+
+.glossary-item {
+  background: rgba(0,0,0,0.3);
+  border-left: 3px solid var(--gold-dark);
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+
+.glossary-term {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--gold);
+  margin-bottom: 3px;
+}
+
+.glossary-def {
+  font-size: 8px;
+  color: var(--gray);
+  line-height: 1.5;
+}
+
+/* =============================================================
    SETTINGS
    ============================================================= */
 .settings-panel {
