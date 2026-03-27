@@ -768,31 +768,31 @@ function renderMap() {
 
         // Node outer glow
         if (current) {
-            const glowPulse = 0.2 + Math.sin(frame * 0.08) * 0.15;
+            const glowPulse = 0.15 + Math.sin(frame * 0.08) * 0.1;
             ctx.fillStyle = `rgba(255,200,44,${glowPulse})`;
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Node circle
+        // Translucent node circle
         if (completed) {
-            ctx.fillStyle = '#22aa44';
+            ctx.fillStyle = 'rgba(34,170,68,0.3)';
         } else if (current) {
-            const pulse = Math.sin(frame * 0.08) * 0.3 + 0.7;
+            const pulse = Math.sin(frame * 0.08) * 0.1 + 0.25;
             ctx.fillStyle = `rgba(255,200,44,${pulse})`;
         } else {
-            ctx.fillStyle = '#333344';
+            ctx.fillStyle = 'rgba(40,40,60,0.4)';
         }
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = completed ? '#44dd66' : current ? '#ffcc44' : '#666677';
+        ctx.strokeStyle = completed ? 'rgba(68,221,102,0.6)' : current ? 'rgba(255,204,68,0.7)' : 'rgba(100,100,120,0.4)';
         ctx.lineWidth = 2;
         ctx.stroke();
 
         // Stage number
-        ctx.fillStyle = locked ? '#555555' : '#ffffff';
+        ctx.fillStyle = locked ? 'rgba(100,100,100,0.5)' : 'rgba(255,255,255,0.9)';
         ctx.font = '14px "Press Start 2P", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -800,10 +800,9 @@ function renderMap() {
 
         // Boss name below
         if (!locked && BOSS_DATA[i]) {
-            // Dark background for readability
             ctx.font = '8px "Press Start 2P", monospace';
             const nameWidth = ctx.measureText(BOSS_DATA[i].name).width;
-            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
             ctx.fillRect(pos.x - nameWidth / 2 - 3, pos.y + 25, nameWidth + 6, 14);
             ctx.fillStyle = completed ? '#44cc66' : '#ddddcc';
             ctx.fillText(BOSS_DATA[i].name, pos.x, pos.y + 32);
@@ -811,7 +810,7 @@ function renderMap() {
 
         // Checkmark for completed
         if (completed) {
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
             ctx.font = '12px "Press Start 2P", monospace';
             ctx.fillText('✓', pos.x, pos.y - 28);
         }

@@ -1,6 +1,6 @@
 // UI System - Shop, Map, Cutscenes, Codex, Settings, event wiring
 import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as engineInit } from './engine.js';
-import { startFight, useHint, useHealthPotion, selectAnswer, startEndlessFight } from './combat.js';
+import { startFight, useHint, useHealthPotion, selectAnswer, startEndlessFight, fleeFight } from './combat.js';
 import { BOSS_DATA, INTRO_CUTSCENE, ENDING_CUTSCENE, CODEX_ENTRIES } from './cutscenes.js';
 import { SHOP_ITEMS, getRandomQuote } from './shop.js';
 import { drawKnight, drawShopkeeper, drawBoss, drawBackground } from './sprites.js';
@@ -48,6 +48,7 @@ function wireEvents() {
 
     // Combat
     document.getElementById('btn-hint').addEventListener('click', useHint);
+    document.getElementById('btn-flee').addEventListener('click', onFlee);
 
     // Victory
     document.getElementById('btn-victory-continue').addEventListener('click', onVictoryContinue);
@@ -812,6 +813,19 @@ function onRetry() {
     } else {
         startFight(combat.bossStage);
     }
+}
+
+// ── Flee ──
+function onFlee() {
+    fleeFight();
+    try { audio.playMenuSelect(); } catch(e) {}
+    if (state.endlessMode) {
+        state.endlessMode = false;
+        state.endlessRound = 0;
+    }
+    showScreen('map');
+    try { audio.playMapMusic(); } catch(e) {}
+    saveGame();
 }
 
 // ── Shop ──

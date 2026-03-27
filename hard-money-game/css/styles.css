@@ -528,6 +528,16 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 .hint-btn:hover { background: rgba(245,200,66,0.1); }
 .hint-btn:disabled { opacity: 0.3; cursor: default; }
 
+.flee-btn {
+  font-size: 9px !important;
+  padding: 6px 12px !important;
+  margin-left: 12px;
+  background: transparent !important;
+  border: 1px solid #884444 !important;
+  color: #cc6666 !important;
+}
+.flee-btn:hover { background: rgba(180,60,60,0.15) !important; }
+
 .explanation {
   background: rgba(0,0,0,0.6);
   padding: 12px 14px;

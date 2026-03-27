@@ -471,10 +471,24 @@ function shuffleArray(arr) {
     return arr;
 }
 
+// ── Flee from combat ──
+export function fleeFight() {
+    stopTimer();
+    combat.isAnswering = false;
+    try { audio.stopMusic(); } catch(e) {}
+}
+
 // ── Endless Mode ──
+let lastEndlessStage = -1;
+
 export function startEndlessFight() {
     state.endlessMode = true;
     state.endlessRound++;
-    const randomStage = Math.floor(Math.random() * 10) + 1;
+    // Pick a random stage, avoid repeating the same boss
+    let randomStage;
+    do {
+        randomStage = Math.floor(Math.random() * 10) + 1;
+    } while (randomStage === lastEndlessStage && state.endlessRound > 1);
+    lastEndlessStage = randomStage;
     startFight(randomStage);
 }
