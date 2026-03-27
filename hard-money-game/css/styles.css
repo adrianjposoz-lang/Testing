@@ -300,8 +300,9 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 .map-overlay {
   background: transparent;
   justify-content: flex-start;
-  padding: 10px;
-  gap: 8px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
 .map-container {
@@ -522,7 +523,6 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
    ============================================================= */
 .question-panel {
   position: absolute;
-  top: 33%;
   bottom: 0;
   left: 0;
   right: 0;
@@ -534,6 +534,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   flex-direction: column;
   justify-content: flex-start;
   gap: 8px;
+  max-height: 65%;
   overflow-y: auto;
 }
 
