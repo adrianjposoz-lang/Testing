@@ -287,9 +287,11 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   z-index: 55;
 }
 
-.cutscene-skip:hover {
-  color: var(--white);
-  border-color: var(--white);
+@media (hover: hover) {
+  .cutscene-skip:hover {
+    color: var(--white);
+    border-color: var(--white);
+  }
 }
 
 /* =============================================================
@@ -595,7 +597,9 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   cursor: pointer;
 }
 
-.hint-btn:hover { background: rgba(245,200,66,0.1); }
+@media (hover: hover) {
+  .hint-btn:hover { background: rgba(245,200,66,0.1); }
+}
 .hint-btn:disabled { opacity: 0.3; cursor: default; }
 
 .potion-btn {
@@ -606,7 +610,9 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border: 1px solid #44aa44 !important;
   color: #66cc66 !important;
 }
-.potion-btn:hover { background: rgba(60,180,60,0.15) !important; }
+@media (hover: hover) {
+  .potion-btn:hover { background: rgba(60,180,60,0.15) !important; }
+}
 .potion-btn:disabled { opacity: 0.3; cursor: default; }
 
 .flee-btn {
@@ -617,7 +623,9 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border: 1px solid #884444 !important;
   color: #cc6666 !important;
 }
-.flee-btn:hover { background: rgba(180,60,60,0.15) !important; }
+@media (hover: hover) {
+  .flee-btn:hover { background: rgba(180,60,60,0.15) !important; }
+}
 
 .explanation {
   background: rgba(0,0,0,0.6);
@@ -770,9 +778,11 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   position: relative;
 }
 
-.shop-item:hover {
-  border-color: var(--gold);
-  box-shadow: 0 0 10px var(--gold-glow);
+@media (hover: hover) {
+  .shop-item:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 10px var(--gold-glow);
+  }
 }
 
 .shop-item.owned { border-color: var(--green); }
@@ -1029,8 +1039,8 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border-color: #2ecc71 !important;
 }
 
-.confirm-yes:hover {
-  background: #2ecc71 !important;
+@media (hover: hover) {
+  .confirm-yes:hover { background: #2ecc71 !important; }
 }
 
 .confirm-no {
@@ -1038,8 +1048,8 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border-color: #e74c3c !important;
 }
 
-.confirm-no:hover {
-  background: #c0392b !important;
+@media (hover: hover) {
+  .confirm-no:hover { background: #c0392b !important; }
 }
 
 .reset-btn {
@@ -1048,8 +1058,8 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   margin-top: 20px;
 }
 
-.reset-btn:hover {
-  background: #cc0000 !important;
+@media (hover: hover) {
+  .reset-btn:hover { background: #cc0000 !important; }
 }
 
 #reset-confirm .pixel-input {
@@ -1065,8 +1075,8 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border-color: #cc0000 !important;
 }
 
-#reset-confirm .confirm-yes:hover {
-  background: #cc0000 !important;
+@media (hover: hover) {
+  #reset-confirm .confirm-yes:hover { background: #cc0000 !important; }
 }
 
 .shake-input {
@@ -1495,8 +1505,10 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   text-shadow: 0 0 6px var(--gold-glow);
 }
 
-.leaderboard-table tr:hover td {
-  background: rgba(255,255,255,0.05);
+@media (hover: hover) {
+  .leaderboard-table tr:hover td {
+    background: rgba(255,255,255,0.05);
+  }
 }
 
 /* =============================================================
