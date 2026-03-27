@@ -84,6 +84,7 @@
                 <span class="gold-display" id="map-gold">Gold: 0</span>
                 <button class="pixel-btn small" id="btn-shop-from-map">SHOP</button>
                 <button class="pixel-btn small" id="btn-codex">CODEX <span id="codex-badge" class="codex-badge hidden">NEW</span></button>
+                <button class="pixel-btn small" id="btn-leaderboard">SCORES</button>
                 <button class="pixel-btn small" id="btn-settings">SETTINGS</button>
             </div>
         </div>
@@ -222,6 +223,14 @@
             </div>
             <button class="pixel-btn" id="btn-endless">ENDLESS MODE</button>
             <button class="pixel-btn" id="btn-share">SHARE VICTORY</button>
+            <button class="pixel-btn" id="btn-complete-leaderboard">HIGH SCORES</button>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboard-screen" class="overlay leaderboard-overlay hidden">
+            <h2 class="screen-title">HIGH SCORES</h2>
+            <div class="leaderboard-content" id="leaderboard-content"></div>
+            <button class="pixel-btn" id="btn-close-leaderboard">CLOSE</button>
         </div>
 
         <!-- Settings Panel -->

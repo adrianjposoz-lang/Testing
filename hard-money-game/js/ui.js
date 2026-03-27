@@ -78,6 +78,11 @@ function wireEvents() {
     // Codex
     document.getElementById('btn-close-codex').addEventListener('click', () => showScreen('map'));
 
+    // Leaderboard
+    document.getElementById('btn-leaderboard').addEventListener('click', () => openLeaderboard('map'));
+    document.getElementById('btn-close-leaderboard').addEventListener('click', closeLeaderboard);
+    document.getElementById('btn-complete-leaderboard').addEventListener('click', () => openLeaderboard('complete'));
+
     // Settings
     document.getElementById('btn-close-settings').addEventListener('click', closeSettings);
     document.getElementById('master-volume').addEventListener('input', e => {
@@ -752,6 +757,7 @@ function onVictoryContinue() {
 }
 
 function showComplete() {
+    recordScore();
     document.getElementById('complete-name').textContent = state.playerName;
 
     // Draw trophy on canvas
@@ -1167,6 +1173,72 @@ function executeReset() {
     document.getElementById('btn-start').textContent = 'PRESS START';
     showScreen('title');
     try { audio.stopMusic(); } catch(e) {}
+}
+
+// ── Leaderboard ──
+const LEADERBOARD_KEY = 'ledger_and_sword_leaderboard';
+let leaderboardReturnScreen = 'map';
+
+function getLeaderboard() {
+    try {
+        const raw = localStorage.getItem(LEADERBOARD_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+}
+
+function saveLeaderboardEntry(entry) {
+    const board = getLeaderboard();
+    board.push(entry);
+    board.sort((a, b) => b.score - a.score);
+    // Keep top 10
+    const top = board.slice(0, 10);
+    try { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top)); } catch(e) {}
+}
+
+export function recordScore() {
+    const accuracy = Math.round(state.totalCorrect / Math.max(1, state.totalAnswered) * 100);
+    const entry = {
+        name: state.playerName,
+        score: state.gold,
+        accuracy: accuracy,
+        combo: state.bestCombo,
+        kills: state.totalKills,
+        date: new Date().toLocaleDateString()
+    };
+    saveLeaderboardEntry(entry);
+}
+
+function openLeaderboard(returnTo) {
+    try { audio.playMenuSelect(); } catch(e) {}
+    leaderboardReturnScreen = returnTo || 'map';
+    const content = document.getElementById('leaderboard-content');
+    const board = getLeaderboard();
+
+    if (board.length === 0) {
+        content.innerHTML = '<p class="codex-empty">No scores yet. Defeat bosses to earn your place!</p>';
+    } else {
+        let html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>NAME</th><th>GOLD</th><th>ACC</th><th>COMBO</th><th>KILLS</th></tr></thead><tbody>';
+        board.forEach((entry, i) => {
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+            html += `<tr${i < 3 ? ' class="top-score"' : ''}>
+                <td>${medal}</td>
+                <td>${entry.name}</td>
+                <td>${entry.score}G</td>
+                <td>${entry.accuracy}%</td>
+                <td>${entry.combo}x</td>
+                <td>${entry.kills}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        content.innerHTML = html;
+    }
+
+    showScreen('leaderboard');
+}
+
+function closeLeaderboard() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    showScreen(leaderboardReturnScreen);
 }
 
 // ── Share ──

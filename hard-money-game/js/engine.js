@@ -53,7 +53,9 @@ export const combat = {
     showingExplanation: false,
     eliminatedIndex: -1,
     bossStage: 1,
-    goldMultiplier: 1
+    goldMultiplier: 1,
+    wrongAnswers: 0,
+    isPerfect: false
 };
 
 // ── Animation State ──
@@ -905,6 +907,9 @@ export function showScreen(screenName) {
             break;
         case 'tutorial':
             document.getElementById('tutorial-screen').classList.remove('hidden');
+            break;
+        case 'leaderboard':
+            document.getElementById('leaderboard-screen').classList.remove('hidden');
             break;
     }
 }

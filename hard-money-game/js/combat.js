@@ -34,6 +34,7 @@ export function startFight(stageNum) {
     combat.showingExplanation = false;
     combat.eliminatedIndex = -1;
     combat.questionIndex = 0;
+    combat.wrongAnswers = 0;
 
     // Check rubber banding - died twice on this boss = extra hint
     const deaths = state.deathsPerStage[stageNum] || 0;
@@ -241,6 +242,7 @@ function onCorrectAnswer() {
     updateHpBars();
     document.getElementById('combat-gold').textContent = state.gold;
     spawnDamageNumber(`-${damage}`, 560, 250, 'boss', isCritical);
+    spawnHpBarDamage(damage, 'boss', isCritical);
     flashScreen('green');
 
     // Check boss death
@@ -256,6 +258,7 @@ function onCorrectAnswer() {
 // ── Wrong Answer ──
 function onWrongAnswer(q) {
     combat.combo = 0;
+    combat.wrongAnswers++;
 
     // Check shield
     if (combat.shieldsRemaining > 0) {
@@ -270,6 +273,7 @@ function onWrongAnswer(q) {
         anim.bossAttack = 12;
         anim.playerHit = 18;
         spawnDamageNumber(`-${bossDmg}`, 150, 330, 'player', false);
+        spawnHpBarDamage(bossDmg, 'player', false);
         flashScreen('red');
     }
 
@@ -329,6 +333,17 @@ function onBossDefeated() {
     combat.goldEarned += bonusGold;
     state.totalKills++;
 
+    // Perfect bonus - no wrong answers
+    combat.isPerfect = combat.wrongAnswers === 0 && combat.questionsAnswered >= 3;
+    if (combat.isPerfect) {
+        const perfectGold = Math.floor(bonusGold * 0.5);
+        state.gold += perfectGold;
+        combat.goldEarned += perfectGold;
+        if (!state.titles.includes('The Flawless')) {
+            state.titles.push('The Flawless');
+        }
+    }
+
     // Mark stage complete
     if (!state.endlessMode) {
         state.completedStages.add(combat.bossStage);
@@ -351,8 +366,9 @@ function onBossDefeated() {
     document.getElementById('fragment-topic').textContent = boss.topic;
     document.getElementById('fragment-recovered').style.display = state.endlessMode ? 'none' : 'block';
     document.getElementById('battle-stats').innerHTML =
-        `Questions: ${state.totalCorrect}/${combat.questionsAnswered} correct<br>` +
+        `Questions: ${combat.questionsAnswered - combat.wrongAnswers}/${combat.questionsAnswered} correct<br>` +
         `Best Combo: ${combat.maxCombo}x<br>` +
+        (combat.isPerfect ? `<div class="perfect-bonus">PERFECT! +${Math.floor(boss.goldReward * 0.5)} bonus gold!</div>` : '') +
         `<span class="boss-defeat-quote">"${boss.defeat}"</span>`;
 
     // Codex notification
@@ -479,6 +495,24 @@ function spawnDamageNumber(text, x, y, type, critical) {
     el.style.top = y + 'px';
     container.appendChild(el);
     setTimeout(() => el.remove(), 1500);
+}
+
+function spawnHpBarDamage(amount, type, critical) {
+    const barId = type === 'boss' ? 'boss-hp-fill' : 'player-hp-fill';
+    const bar = document.getElementById(barId);
+    if (!bar) return;
+    const barRect = bar.parentElement.getBoundingClientRect();
+    const containerRect = document.getElementById('game-container').getBoundingClientRect();
+    // Position on the HP bar itself
+    const x = barRect.left - containerRect.left + barRect.width * 0.5;
+    const y = barRect.top - containerRect.top;
+    const el = document.createElement('div');
+    el.className = `hp-bar-damage${critical ? ' critical' : ''}`;
+    el.textContent = `-${amount}`;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.getElementById('damage-numbers').appendChild(el);
+    setTimeout(() => el.remove(), 1200);
 }
 
 function flashScreen(color) {
