@@ -3,7 +3,7 @@ import { state, combat, showScreen, saveGame, loadGame, getMapNodePos, init as e
 import { startFight, useHint, useHealthPotion, selectAnswer, startEndlessFight } from './combat.js';
 import { BOSS_DATA, INTRO_CUTSCENE, ENDING_CUTSCENE, CODEX_ENTRIES } from './cutscenes.js';
 import { SHOP_ITEMS, getRandomQuote } from './shop.js';
-import { drawKnight, drawShopkeeper } from './sprites.js';
+import { drawKnight, drawShopkeeper, drawBoss, drawBackground } from './sprites.js';
 import { audio } from './audio.js';
 import { SaveSystem } from './save.js';
 
@@ -299,8 +299,16 @@ function drawCutsceneScene(ctx, scene, w, h) {
             }
             break;
         default:
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, w, h);
+            // Boss stage backgrounds - draw the stage background + boss sprite
+            const stageMap = { cave:1, volcano:2, beach:3, graveyard:4, swamp:5, forest:6, hellscape:7, dungeon:8, sky:9, castle:10 };
+            const stageId = stageMap[scene];
+            if (stageId) {
+                drawBackground(ctx, w, h, stageId);
+                drawBoss(ctx, w/2 - 30, h/2 - 40, 3, stageId, Date.now() * 0.01);
+            } else {
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, w, h);
+            }
             break;
     }
 }
