@@ -1724,8 +1724,8 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
   /* During combat, zoom into the sprite area so fighters are visible */
   #game-canvas.combat-zoom {
-    transform: scale(1.5) translateY(5%);
-    transform-origin: center center;
+    transform: scale(1.25) translateY(8%);
+    transform-origin: center 60%;
   }
 
   /* --- Overlays: fill full mobile viewport --- */
@@ -2144,23 +2144,33 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   }
 
   /* --- Cutscene --- */
+  .cutscene-overlay {
+    justify-content: flex-start;
+    gap: 0;
+  }
+
   .cutscene-overlay canvas {
-    max-height: 50%;
+    max-height: 35%;
+    width: 100%;
+    flex-shrink: 0;
   }
 
   .cutscene-box {
-    padding: 10px;
-    min-height: 100px;
+    padding: 12px;
+    min-height: 0;
+    flex: 1;
+    justify-content: flex-start;
+    padding-top: 16px;
   }
 
   .cutscene-speaker {
     font-size: 9px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .cutscene-text {
     font-size: 9px;
-    line-height: 1.5;
+    line-height: 1.6;
   }
 
   .cutscene-prompt {
