@@ -54,6 +54,8 @@ function wireEvents() {
     document.getElementById('btn-codex').addEventListener('click', openCodex);
     document.getElementById('btn-study').addEventListener('click', openStudyMode);
     document.getElementById('btn-glossary').addEventListener('click', openGlossary);
+    document.getElementById('btn-journal').addEventListener('click', openJournal);
+    document.getElementById('btn-close-journal').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
     document.getElementById('btn-settings').addEventListener('click', () => showScreen('settings'));
 
     // Map node clicks - use canvas click
@@ -1540,4 +1542,174 @@ function filterGlossary() {
         );
     }
     renderGlossary();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MISTAKE JOURNAL
+// ══════════════════════════════════════════════════════════════
+let journalQuestions = [];
+let journalIndex = 0;
+let journalCorrect = 0;
+let journalTotal = 0;
+let journalAnswered = false;
+
+function openJournal() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    const journal = state.mistakeJournal;
+
+    document.getElementById('journal-quiz-area').classList.add('hidden');
+    document.getElementById('btn-journal-next').classList.add('hidden');
+
+    // Build stats summary
+    const statsEl = document.getElementById('journal-stats');
+    const listEl = document.getElementById('journal-list');
+
+    if (journal.length === 0) {
+        statsEl.innerHTML = '<p class="journal-empty">No mistakes yet! Keep playing to track your learning.</p>';
+        listEl.innerHTML = '';
+        document.getElementById('btn-journal-quiz').classList.add('hidden');
+        showScreen('journal');
+        return;
+    }
+
+    // Topic breakdown
+    const topicStats = {};
+    for (let i = 1; i <= 10; i++) topicStats[i] = { wrong: 0, corrected: 0, topic: STAGE_TOPICS[i] };
+    journal.forEach(e => {
+        topicStats[e.stage].wrong += e.reviewedWrong;
+        topicStats[e.stage].corrected += e.reviewedCorrect;
+    });
+
+    const weakTopics = Object.entries(topicStats)
+        .filter(([_, v]) => v.wrong > 0)
+        .sort((a, b) => (b[1].wrong - b[1].corrected) - (a[1].wrong - a[1].corrected));
+
+    statsEl.innerHTML = `
+        <div class="journal-summary">
+            <span class="journal-stat">Total Mistakes: <strong>${journal.length}</strong></span>
+            <span class="journal-stat">Weakest Topic: <strong>${weakTopics.length > 0 ? weakTopics[0][1].topic : 'None'}</strong></span>
+        </div>
+        <div class="journal-topics">
+            ${weakTopics.map(([stage, s]) => `
+                <div class="journal-topic-row">
+                    <span class="journal-topic-name">Stage ${stage}: ${s.topic}</span>
+                    <span class="journal-topic-count">${s.wrong} missed / ${s.corrected} corrected</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // List recent mistakes (newest first, max 20)
+    const recent = [...journal].sort((a, b) => b.lastMissed - a.lastMissed).slice(0, 20);
+    listEl.innerHTML = recent.map(e => `
+        <div class="journal-entry">
+            <div class="journal-q">${e.question}</div>
+            <div class="journal-wrong">Your answer: ${e.yourAnswer}</div>
+            <div class="journal-right">Correct: ${e.correctAnswer}</div>
+            <div class="journal-explain">${e.explanation}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('btn-journal-quiz').classList.remove('hidden');
+    document.getElementById('btn-journal-quiz').onclick = startJournalQuiz;
+
+    showScreen('journal');
+}
+
+function startJournalQuiz() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    // Get questions from the journal - find matching QUESTIONS entries
+    const journalIds = state.mistakeJournal.map(e => e.questionId);
+    journalQuestions = shuffleStudy(QUESTIONS.filter(q => journalIds.includes(q.id)));
+
+    if (journalQuestions.length === 0) return;
+
+    journalIndex = 0;
+    journalCorrect = 0;
+    journalTotal = 0;
+
+    document.getElementById('journal-stats').innerHTML = '';
+    document.getElementById('journal-list').innerHTML = '';
+    document.getElementById('btn-journal-quiz').classList.add('hidden');
+    document.getElementById('journal-quiz-area').classList.remove('hidden');
+
+    showJournalQuestion();
+}
+
+function showJournalQuestion() {
+    journalAnswered = false;
+
+    if (journalIndex >= journalQuestions.length) {
+        const pct = journalTotal > 0 ? Math.round((journalCorrect / journalTotal) * 100) : 0;
+        document.getElementById('journal-quiz-question').textContent =
+            `Review complete! ${journalCorrect}/${journalTotal} correct (${pct}%).`;
+        document.getElementById('journal-quiz-answers').innerHTML = '';
+        document.getElementById('journal-quiz-feedback').classList.add('hidden');
+        document.getElementById('journal-quiz-progress').textContent = `${journalTotal}/${journalQuestions.length}`;
+
+        const nextBtn = document.getElementById('btn-journal-next');
+        nextBtn.textContent = 'BACK TO JOURNAL';
+        nextBtn.classList.remove('hidden');
+        nextBtn.onclick = () => openJournal();
+        return;
+    }
+
+    const q = journalQuestions[journalIndex];
+    document.getElementById('journal-quiz-progress').textContent = `${journalIndex + 1}/${journalQuestions.length}`;
+    document.getElementById('journal-quiz-question').textContent = q.question;
+    document.getElementById('journal-quiz-feedback').classList.add('hidden');
+    document.getElementById('btn-journal-next').classList.add('hidden');
+
+    const container = document.getElementById('journal-quiz-answers');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => onJournalAnswer(i, q));
+        container.appendChild(btn);
+    });
+}
+
+function onJournalAnswer(index, q) {
+    if (journalAnswered) return;
+    journalAnswered = true;
+
+    const correct = index === q.correctIndex;
+    journalTotal++;
+    if (correct) journalCorrect++;
+
+    // Update journal entry
+    const entry = state.mistakeJournal.find(e => e.questionId === q.id);
+    if (entry) {
+        if (correct) {
+            entry.reviewedCorrect++;
+        } else {
+            entry.reviewedWrong++;
+            entry.lastMissed = Date.now();
+        }
+    }
+
+    // Highlight answers
+    const buttons = document.querySelectorAll('#journal-quiz-answers .answer-btn');
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correctIndex) btn.classList.add('correct');
+        if (i === index && !correct) btn.classList.add('wrong');
+    });
+
+    // Show feedback
+    const feedback = document.getElementById('journal-quiz-feedback');
+    feedback.classList.remove('hidden');
+    feedback.innerHTML = correct
+        ? `<span class="study-correct-text">&#10003; Correct! You've improved on this one.</span><br><span class="study-explain">${q.explanation}</span>`
+        : `<span class="study-wrong-text">&#10007; Still tricky. Review the explanation.</span><br><span class="study-explain">${q.explanation}</span>`;
+
+    const nextBtn = document.getElementById('btn-journal-next');
+    nextBtn.textContent = 'NEXT QUESTION';
+    nextBtn.classList.remove('hidden');
+    nextBtn.onclick = () => { journalIndex++; showJournalQuestion(); };
+
+    // Auto-save progress
+    saveGame();
 }

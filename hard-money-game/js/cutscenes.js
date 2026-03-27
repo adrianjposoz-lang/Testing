@@ -13,7 +13,9 @@ export const BOSS_DATA = [
         taunt: "Hehehe! You think you know lending? I've hoarded these terms for centuries!",
         defeat: "Nooo! My precious terms! Take them... take them all!",
         intro: "A small, green creature clutches a bag of stolen knowledge in a damp cave.",
-        deathMessage: "The Loan Goblin scurries away... but you'll be back, right?"
+        deathMessage: "The Loan Goblin scurries away... but you'll be back, right?",
+        mechanic: { type: 'greedy_grab', description: 'Steals 5 gold on wrong answers' },
+        mechanicAnnounce: "The Loan Goblin eyes your gold pouch greedily..."
     },
     {
         name: 'The Interest Rate Imp',
@@ -26,7 +28,9 @@ export const BOSS_DATA = [
         taunt: "Your understanding of rates is about to COMPOUND into pain!",
         defeat: "My rates... they're dropping! This can't be!",
         intro: "Atop a smoldering hill, an imp juggles flaming percentage signs.",
-        deathMessage: "The Imp cackles as your interest in survival... declines."
+        deathMessage: "The Imp cackles as your interest in survival... declines.",
+        mechanic: { type: 'compounding_fury', description: 'Each wrong answer reduces timer by 1s' },
+        mechanicAnnounce: "The Imp's fury compounds with every mistake..."
     },
     {
         name: 'The Collateral Crab',
@@ -39,7 +43,9 @@ export const BOSS_DATA = [
         taunt: "You want to pass? Put up some COLLATERAL first! *snip snip*",
         defeat: "My shell! My beautiful collateral! It's... it's worthless!",
         intro: "A massive crab guards a beach of treasures, its gem-encrusted shell gleaming.",
-        deathMessage: "The Crab snips your confidence in half. Try again?"
+        deathMessage: "The Crab snips your confidence in half. Try again?",
+        mechanic: { type: 'shell_shield', description: 'Takes 50% less damage on first 2 hits' },
+        mechanicAnnounce: "The Crab retreats into its gem-encrusted shell!"
     },
     {
         name: 'The Appraisal Ghost',
@@ -52,7 +58,9 @@ export const BOSS_DATA = [
         taunt: "I've appraised your chances... and they're BELOW market value!",
         defeat: "You've... you've seen right through me! I'm transparent anyway...",
         intro: "In a misty graveyard, a spectral figure peers through a ghostly magnifying glass.",
-        deathMessage: "The Ghost appraises your defeat at exactly zero gold. Ouch."
+        deathMessage: "The Ghost appraises your defeat at exactly zero gold. Ouch.",
+        mechanic: { type: 'phantom_shuffle', description: 'Answers re-shuffle after 3 seconds' },
+        mechanicAnnounce: "The Ghost's spectral hands rearrange reality itself..."
     },
     {
         name: 'The Escrow Ogre',
@@ -65,7 +73,9 @@ export const BOSS_DATA = [
         taunt: "NOBODY closes a deal in MY swamp! The title stays with ME!",
         defeat: "The deal... it's closed?! I hate closings!",
         intro: "A hulking ogre blocks the only bridge through a murky swamp, padlock in hand.",
-        deathMessage: "The Ogre shoves you back into the swamp. Escrow THAT."
+        deathMessage: "The Ogre shoves you back into the swamp. Escrow THAT.",
+        mechanic: { type: 'escrow_hold', description: 'Gold held in escrow until consecutive correct' },
+        mechanicAnnounce: "The Ogre holds your gold in escrow... prove yourself!"
     },
     {
         name: 'The LTV Werewolf',
@@ -78,7 +88,9 @@ export const BOSS_DATA = [
         taunt: "When the full moon rises, your loan-to-value ratio will be your DOOM!",
         defeat: "My ratios... they're perfectly balanced! How?!",
         intro: "Under a blood moon, a werewolf howls equations into the night sky.",
-        deathMessage: "The Werewolf's bite ratio is 100%. You're lunch."
+        deathMessage: "The Werewolf's bite ratio is 100%. You're lunch.",
+        mechanic: { type: 'risk_frenzy', description: 'Timer speeds up 30% when boss HP below 30%' },
+        mechanicAnnounce: "The Werewolf grows more frenzied as it weakens..."
     },
     {
         name: 'The Default Demon',
@@ -91,7 +103,9 @@ export const BOSS_DATA = [
         taunt: "Everyone defaults eventually... especially YOU!",
         defeat: "I... I'm in default?! The irony BURNS!",
         intro: "Wings of shadow spread across a burning sky. The Demon of Default descends.",
-        deathMessage: "The Demon marks your credit report. Permanently."
+        deathMessage: "The Demon marks your credit report. Permanently.",
+        mechanic: { type: 'penalty_interest', description: 'Each wrong answer after the first deals +1 extra damage' },
+        mechanicAnnounce: "The Demon's penalty interest accrues with each failure..."
     },
     {
         name: 'The Underwriting Hydra',
@@ -104,7 +118,9 @@ export const BOSS_DATA = [
         taunt: "Three heads! Three times the scrutiny! Your application is DENIED!",
         defeat: "All three heads... approved?! This has never happened!",
         intro: "Deep in a dungeon, three serpent heads argue over a stack of paperwork.",
-        deathMessage: "APPLICATION DENIED. All three heads agree."
+        deathMessage: "APPLICATION DENIED. All three heads agree.",
+        mechanic: { type: 'two_heads', description: 'Occasionally fires two questions in rapid succession' },
+        mechanicAnnounce: "The Hydra's two heads attack in rapid succession!"
     },
     {
         name: 'The Foreclosure Phoenix',
@@ -117,7 +133,9 @@ export const BOSS_DATA = [
         taunt: "From the ashes of bad loans, I RISE! And I'll burn your portfolio too!",
         defeat: "I'll be back! I always come back! ...right?",
         intro: "A phoenix of flame and foreclosure notices circles above a ruined castle.",
-        deathMessage: "The Phoenix's flames were too hot. Your portfolio is toast."
+        deathMessage: "The Phoenix's flames were too hot. Your portfolio is toast.",
+        mechanic: { type: 'rising_ashes', description: 'Revives once with 2 HP when defeated' },
+        mechanicAnnounce: "The Phoenix's flames flicker with an unnatural resilience..."
     },
     {
         name: 'The ARV Dragon',
@@ -130,7 +148,9 @@ export const BOSS_DATA = [
         taunt: "I am the FINAL obstacle! The After Repair Value of your LIFE is ZERO!",
         defeat: "The Ledger... it's complete. You've... actually done it. Impossible!",
         intro: "Atop a mountain of corrupted contracts, the great dragon awaits. The final fragment glows in its claws.",
-        deathMessage: "The Dragon's fire was overwhelming. But legends say Debt Knights never truly fall..."
+        deathMessage: "The Dragon's fire was overwhelming. But legends say Debt Knights never truly fall...",
+        mechanic: { type: 'market_crash', description: 'Randomly hides one answer for 4 seconds' },
+        mechanicAnnounce: "The Dragon's market crash obscures your choices!"
     }
 ];
 

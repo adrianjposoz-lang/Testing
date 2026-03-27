@@ -29,7 +29,11 @@ export const state = {
     endlessMode: false,
     endlessRound: 0,
     persistentHp: 5,
-    persistentMaxHp: 5
+    persistentMaxHp: 5,
+    mistakeJournal: [],
+    xp: 0,
+    totalXp: 0,
+    skills: {}
 };
 
 // ── Combat State ──
@@ -81,6 +85,8 @@ const WIDTH = 800, HEIGHT = 600;
 export function getCanvas() { return canvas; }
 export function getCtx() { return ctx; }
 export function getFrame() { return frame; }
+
+export function hasSkill(id) { return state.skills[id] === true; }
 
 export function init() {
     canvas = document.getElementById('game-canvas');
@@ -881,7 +887,7 @@ export function showScreen(screenName) {
 
     state.screen = screenName;
     // Hide all overlays
-    const overlays = document.querySelectorAll('.overlay');
+    const overlays = document.querySelectorAll('.overlay, .screen-overlay');
     overlays.forEach(o => o.classList.add('hidden'));
     // Hide combat-specific UI
     document.getElementById('combat-hud').classList.add('hidden');
@@ -968,6 +974,12 @@ export function showScreen(screenName) {
         case 'glossary':
             document.getElementById('glossary-screen').classList.remove('hidden');
             break;
+        case 'journal':
+            document.getElementById('journal-screen').classList.remove('hidden');
+            break;
+        case 'skills':
+            document.getElementById('skills-screen').classList.remove('hidden');
+            break;
     }
 }
 
@@ -978,7 +990,10 @@ export function saveGame() {
         completedStages: [...state.completedStages],
         ownedItems: [...state.ownedItems],
         codexUnlocked: [...state.codexUnlocked],
-        codexViewed: [...state.codexViewed]
+        codexViewed: [...state.codexViewed],
+        xp: state.xp,
+        totalXp: state.totalXp,
+        skills: state.skills
     };
     SaveSystem.save(data);
 }
@@ -1006,5 +1021,9 @@ export function loadGame() {
     state.settings = data.settings || state.settings;
     state.persistentHp = data.persistentHp ?? 5;
     state.persistentMaxHp = data.persistentMaxHp ?? 5;
+    state.mistakeJournal = data.mistakeJournal || [];
+    state.xp = data.xp || 0;
+    state.totalXp = data.totalXp || 0;
+    state.skills = data.skills || {};
     return true;
 }

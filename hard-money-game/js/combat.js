@@ -93,9 +93,39 @@ export function startFight(stageNum) {
 
     try { audio.stopMusic(); audio.playBattleMusic(); } catch(e) {}
 
-    // Show boss intro, then taunt
+    // Boss mechanic state
+    combat.mechanicState = {};
+    const mechanic = boss.mechanic;
+    if (mechanic) {
+        switch (mechanic.type) {
+            case 'shell_shield':
+                combat.mechanicState.shieldHits = 0;
+                break;
+            case 'escrow_hold':
+                combat.mechanicState.heldGold = 0;
+                combat.mechanicState.lastCorrect = false;
+                break;
+            case 'rising_ashes':
+                combat.mechanicState.hasRevived = false;
+                break;
+            case 'compounding_fury':
+                combat.mechanicState.timerPenalty = 0;
+                break;
+            case 'penalty_interest':
+                combat.mechanicState.wrongCount = 0;
+                break;
+            case 'two_heads':
+                combat.mechanicState.rapidFire = false;
+                break;
+        }
+    }
+
+    // Show boss intro, then taunt, then mechanic announcement
     showBossIntro(boss.intro);
     setTimeout(() => showBossTaunt(boss.taunt), 1800);
+    if (boss.mechanicAnnounce) {
+        setTimeout(() => showMechanicAnnounce(boss.mechanicAnnounce), 2800);
+    }
     setTimeout(() => nextQuestion(), 3500);
 }
 
@@ -146,6 +176,54 @@ export function nextQuestion() {
     // Start timer
     combat.questionStartTime = Date.now();
     startTimer();
+
+    // Boss mechanic: post-render effects on answer buttons
+    const boss = BOSS_DATA[combat.bossStage];
+    if (boss && boss.mechanic) {
+        const mType = boss.mechanic.type;
+
+        if (mType === 'phantom_shuffle') {
+            // After 3 seconds, re-shuffle the answer button texts and handlers
+            combat._phantomTimer = setTimeout(() => {
+                if (!combat.isAnswering) return;
+                const btns = document.querySelectorAll('.answer-btn');
+                if (btns.length < 2) return;
+                // Collect current data
+                const data = Array.from(btns).map(btn => ({
+                    text: btn.textContent,
+                    index: parseInt(btn.dataset.index)
+                }));
+                // Shuffle
+                for (let i = data.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [data[i], data[j]] = [data[j], data[i]];
+                }
+                // Apply shuffled data back
+                btns.forEach((btn, i) => {
+                    btn.textContent = data[i].text;
+                    btn.dataset.index = data[i].index;
+                    // Replace click handler
+                    const newBtn = btn.cloneNode(true);
+                    newBtn.addEventListener('click', () => selectAnswer(data[i].index));
+                    btn.parentNode.replaceChild(newBtn, btn);
+                });
+                showMechanicAnnounce('Answers shuffled!');
+            }, 3000);
+        }
+
+        if (mType === 'market_crash') {
+            // Hide a random non-correct answer for 4 seconds
+            const btns = document.querySelectorAll('.answer-btn');
+            const hideable = Array.from(btns).filter(btn => parseInt(btn.dataset.index) !== q.correctIndex);
+            if (hideable.length > 0) {
+                const hideBtn = hideable[Math.floor(Math.random() * hideable.length)];
+                hideBtn.style.visibility = 'hidden';
+                combat._marketCrashTimer = setTimeout(() => {
+                    hideBtn.style.visibility = 'visible';
+                }, 4000);
+            }
+        }
+    }
 }
 
 // ── Timer ──
@@ -153,7 +231,15 @@ function startTimer() {
     // Boss rage: timer shortens when boss HP is below 30%
     const bossHpPercent = combat.bossHp / combat.bossMaxHp;
     const rageReduction = bossHpPercent < 0.3 ? 3 : 0;
-    combat.timerValue = Math.max(5, combat.timerMax + combat.bonusTime - rageReduction);
+    let timerBase = combat.timerMax + combat.bonusTime - rageReduction;
+
+    // risk_frenzy: 30% timer reduction when boss HP below 30%
+    const boss = BOSS_DATA[combat.bossStage];
+    if (boss && boss.mechanic && boss.mechanic.type === 'risk_frenzy' && bossHpPercent < 0.3) {
+        timerBase = Math.floor(timerBase * 0.7);
+    }
+
+    combat.timerValue = Math.max(5, timerBase);
     const timerFill = document.getElementById('timer-fill');
     const timerText = document.getElementById('timer-text');
     const totalTime = combat.timerValue;
@@ -313,6 +399,27 @@ function onWrongAnswer(q, selectedAnswer) {
         correctAnswer: q.options[q.correctIndex],
         explanation: q.explanation
     });
+
+    // Add to persistent mistake journal (avoid duplicates for same question in same fight)
+    const existingEntry = state.mistakeJournal.find(e => e.questionId === q.id);
+    if (existingEntry) {
+        existingEntry.reviewedWrong++;
+        existingEntry.lastMissed = Date.now();
+        existingEntry.yourAnswer = selectedAnswer;
+    } else {
+        state.mistakeJournal.push({
+            questionId: q.id,
+            stage: q.stage,
+            question: q.question,
+            yourAnswer: selectedAnswer,
+            correctAnswer: q.options[q.correctIndex],
+            explanation: q.explanation,
+            timestamp: Date.now(),
+            lastMissed: Date.now(),
+            reviewedCorrect: 0,
+            reviewedWrong: 1
+        });
+    }
 
     // Check shield
     if (combat.shieldsRemaining > 0) {
@@ -736,6 +843,18 @@ function showBossIntro(text) {
         tauntEl.style.borderColor = '';
         tauntEl.style.color = '';
     }, 1800);
+}
+
+// ── Boss Mechanic Announcement ──
+function showMechanicAnnounce(text) {
+    const el = document.getElementById('boss-mechanic-text');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('hidden');
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+    setTimeout(() => el.classList.add('hidden'), 3000);
 }
 
 // ── Boss Taunts ──

@@ -1155,6 +1155,117 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 
 /* =============================================================
+   MISTAKE JOURNAL
+   ============================================================= */
+.journal-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.journal-summary {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.journal-stat {
+  font-size: 10px;
+  color: var(--gold);
+}
+
+.journal-stat strong {
+  color: var(--white);
+}
+
+.journal-topics {
+  width: 100%;
+  max-width: 500px;
+}
+
+.journal-topic-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-size: 9px;
+}
+
+.journal-topic-name {
+  color: var(--white);
+}
+
+.journal-topic-count {
+  color: var(--gray);
+  font-size: 8px;
+}
+
+.journal-list {
+  width: 100%;
+  max-width: 550px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.journal-entry {
+  background: rgba(22, 33, 62, 0.8);
+  border: 1px solid rgba(245, 200, 66, 0.2);
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 9px;
+}
+
+.journal-q {
+  color: var(--white);
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.journal-wrong {
+  color: #ff6666;
+  font-size: 8px;
+}
+
+.journal-right {
+  color: #66ff66;
+  font-size: 8px;
+  margin-top: 2px;
+}
+
+.journal-explain {
+  color: var(--gray);
+  font-size: 8px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.journal-empty {
+  color: var(--gray);
+  font-size: 10px;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.journal-quiz-area {
+  width: 100%;
+  max-width: 550px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* =============================================================
    SETTINGS
    ============================================================= */
 .settings-panel {
@@ -2834,4 +2945,32 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   .ach-name { font-size: 6px; }
   .ach-desc { font-size: 6px; }
   .question-topic { font-size: 6px; }
+}
+
+/* =============================================================
+   BOSS MECHANIC ANNOUNCEMENT
+   ============================================================= */
+.boss-mechanic-text {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #ff8844;
+  text-align: center;
+  z-index: 30;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #ff8844;
+  border-radius: 4px;
+  animation: mechanicFade 3s ease-out forwards;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@keyframes mechanicFade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
 }

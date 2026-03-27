@@ -92,10 +92,12 @@
                     <span class="gold-display" id="map-gold">Gold: 0</span>
                     <button class="pixel-btn small" id="btn-shop-from-map">SHOP</button>
                     <button class="pixel-btn small" id="btn-codex">CODEX <span id="codex-badge" class="codex-badge hidden">NEW</span></button>
+                    <button class="pixel-btn small" id="btn-skills">SKILLS</button>
                 </div>
                 <div class="map-footer-row">
                     <button class="pixel-btn small" id="btn-study">STUDY</button>
                     <button class="pixel-btn small" id="btn-glossary">GLOSSARY</button>
+                    <button class="pixel-btn small" id="btn-journal">JOURNAL</button>
                     <button class="pixel-btn small" id="btn-stats">STATS</button>
                     <button class="pixel-btn small" id="btn-leaderboard">SCORES</button>
                     <button class="pixel-btn small" id="btn-settings">SETTINGS</button>
@@ -156,6 +158,9 @@
                 <p id="explanation-text"></p>
             </div>
         </div>
+
+        <!-- Boss mechanic announcement -->
+        <div id="boss-mechanic-text" class="boss-mechanic-text hidden"></div>
 
         <!-- Boss taunt bar -->
         <div id="boss-taunt" class="boss-taunt hidden"></div>
@@ -288,6 +293,22 @@
             </div>
             <div class="glossary-list" id="glossary-list"></div>
             <button class="pixel-btn" id="btn-close-glossary">BACK TO MAP</button>
+        </div>
+
+        <!-- Mistake Journal -->
+        <div id="journal-screen" class="screen-overlay journal-overlay hidden">
+            <h2 class="screen-title">MISTAKE JOURNAL</h2>
+            <button class="pixel-btn small close-btn" id="btn-close-journal">&#10005; CLOSE</button>
+            <div id="journal-stats" class="journal-stats"></div>
+            <button class="pixel-btn" id="btn-journal-quiz">QUIZ MY MISTAKES</button>
+            <div id="journal-list" class="journal-list"></div>
+            <div id="journal-quiz-area" class="journal-quiz-area hidden">
+                <div class="study-progress" id="journal-quiz-progress">1/10</div>
+                <div class="study-question" id="journal-quiz-question"></div>
+                <div class="study-answers" id="journal-quiz-answers"></div>
+                <div class="study-feedback hidden" id="journal-quiz-feedback"></div>
+                <button class="pixel-btn" id="btn-journal-next">NEXT QUESTION</button>
+            </div>
         </div>
 
         <!-- Settings Panel -->

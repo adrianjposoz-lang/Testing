@@ -24,6 +24,10 @@ export const SaveSystem = {
                 settings: gameState.settings,
                 persistentHp: gameState.persistentHp,
                 persistentMaxHp: gameState.persistentMaxHp,
+                mistakeJournal: gameState.mistakeJournal,
+                xp: gameState.xp,
+                totalXp: gameState.totalXp,
+                skills: gameState.skills,
                 savedAt: Date.now()
             };
             localStorage.setItem(SAVE_KEY, JSON.stringify(data));
