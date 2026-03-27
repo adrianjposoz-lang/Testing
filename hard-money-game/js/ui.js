@@ -216,86 +216,439 @@ function drawCutsceneScene(ctx, scene, w, h) {
 
     switch (scene) {
         case 'kingdom_peaceful':
-            ctx.fillStyle = '#2a4a6a';
+            // Sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.6);
+            skyGrad.addColorStop(0, '#1a3a6a');
+            skyGrad.addColorStop(1, '#4a88cc');
+            ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, w, h * 0.6);
-            ctx.fillStyle = '#3a8a3a';
-            ctx.fillRect(0, h * 0.6, w, h * 0.4);
-            // Castle
-            ctx.fillStyle = '#8888aa';
-            ctx.fillRect(300, 100, 200, 200);
-            ctx.fillRect(340, 60, 40, 60);
-            ctx.fillRect(420, 60, 40, 60);
+            // Sun
             ctx.fillStyle = '#ffdd44';
-            for (let i = 0; i < 5; i++) {
-                ctx.fillRect(320 + i * 40, 160, 15, 20);
+            ctx.beginPath(); ctx.arc(650, 60, 35, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'rgba(255,221,68,0.2)';
+            ctx.beginPath(); ctx.arc(650, 60, 55, 0, Math.PI * 2); ctx.fill();
+            // Clouds
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.fillRect(80, 40, 80, 16); ctx.fillRect(90, 30, 60, 14); ctx.fillRect(100, 50, 40, 10);
+            ctx.fillRect(500, 70, 70, 14); ctx.fillRect(510, 62, 50, 12);
+            // Distant mountains
+            ctx.fillStyle = '#3a6a3a';
+            for (let i = 0; i < 8; i++) {
+                const mx = i * 120 - 40;
+                const mh = 50 + Math.sin(i * 1.2) * 30;
+                ctx.beginPath(); ctx.moveTo(mx, h*0.6); ctx.lineTo(mx+60, h*0.6-mh); ctx.lineTo(mx+120, h*0.6); ctx.fill();
             }
-            break;
-        case 'kingdom_dark':
-        case 'kingdom_ruins':
-            ctx.fillStyle = '#1a0a1a';
-            ctx.fillRect(0, 0, w, h * 0.6);
-            ctx.fillStyle = '#2a1a0a';
-            ctx.fillRect(0, h * 0.6, w, h * 0.4);
-            ctx.fillStyle = '#444444';
-            ctx.fillRect(300, 120, 200, 180);
-            ctx.fillRect(340, 80, 40, 60);
-            // Cracks
-            ctx.fillStyle = '#222222';
-            ctx.fillRect(350, 150, 30, 5);
-            ctx.fillRect(420, 180, 20, 40);
-            // Red glow
-            ctx.fillStyle = 'rgba(200,50,50,0.3)';
-            ctx.fillRect(0, 0, w, h);
-            break;
-        case 'throne_room':
-            ctx.fillStyle = '#2a1a3a';
-            ctx.fillRect(0, 0, w, h);
-            // Throne
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(340, 100, 120, 180);
-            ctx.fillStyle = '#cc2222';
-            ctx.fillRect(350, 110, 100, 80);
-            ctx.fillStyle = '#ffdd00';
-            ctx.fillRect(380, 80, 40, 30);
-            // Pillars
-            ctx.fillStyle = '#666688';
-            ctx.fillRect(100, 50, 40, 280);
-            ctx.fillRect(660, 50, 40, 280);
-            break;
-        case 'knight_departure':
-        case 'knight_sunset':
-            ctx.fillStyle = '#ff6633';
-            ctx.fillRect(0, 0, w, h * 0.5);
-            ctx.fillStyle = '#cc4422';
-            ctx.fillRect(0, h * 0.3, w, h * 0.2);
-            ctx.fillStyle = '#2a3a2a';
-            ctx.fillRect(0, h * 0.5, w, h * 0.5);
-            drawKnight(ctx, 380, 200, 4, state.equipment, 0);
-            break;
-        case 'ledger_complete':
-            ctx.fillStyle = '#1a1a3a';
-            ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#ffdd44';
-            ctx.globalAlpha = 0.5;
-            ctx.fillRect(300, 80, 200, 240);
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '20px "Press Start 2P", monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText('THE LEDGER', 400, 200);
-            break;
-        case 'kingdom_restored':
-            ctx.fillStyle = '#4488cc';
-            ctx.fillRect(0, 0, w, h * 0.6);
+            // Rolling green hills
             ctx.fillStyle = '#44aa44';
             ctx.fillRect(0, h * 0.6, w, h * 0.4);
-            ctx.fillStyle = '#aaaacc';
-            ctx.fillRect(300, 100, 200, 200);
-            ctx.fillRect(340, 60, 40, 60);
-            ctx.fillRect(420, 60, 40, 60);
+            ctx.fillStyle = '#3a9a3a';
+            ctx.beginPath(); ctx.ellipse(200, h*0.6, 200, 30, 0, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(600, h*0.6, 180, 25, 0, 0, Math.PI*2); ctx.fill();
+            // Castle - main keep
+            ctx.fillStyle = '#9999bb';
+            ctx.fillRect(310, 100, 180, 200);
+            // Castle towers
+            ctx.fillStyle = '#8888aa';
+            ctx.fillRect(290, 60, 50, 240);
+            ctx.fillRect(460, 60, 50, 240);
+            // Tower roofs (triangular)
+            ctx.fillStyle = '#cc3333';
+            ctx.beginPath(); ctx.moveTo(290, 60); ctx.lineTo(315, 20); ctx.lineTo(340, 60); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(460, 60); ctx.lineTo(485, 20); ctx.lineTo(510, 60); ctx.fill();
+            // Main roof
+            ctx.fillStyle = '#aa2222';
+            ctx.beginPath(); ctx.moveTo(310, 100); ctx.lineTo(400, 55); ctx.lineTo(490, 100); ctx.fill();
+            // Castle walls texture
+            ctx.fillStyle = '#8888aa';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const bx = 315 + col * 28 + (row % 2) * 14;
+                    const by = 105 + row * 24;
+                    ctx.fillRect(bx, by, 26, 22);
+                    ctx.fillStyle = '#777799';
+                    ctx.fillRect(bx, by, 26, 1);
+                    ctx.fillRect(bx, by, 1, 22);
+                    ctx.fillStyle = '#8888aa';
+                }
+            }
+            // Windows (lit golden)
             ctx.fillStyle = '#ffdd44';
+            ctx.fillRect(350, 140, 20, 25); ctx.fillRect(430, 140, 20, 25);
+            ctx.fillRect(350, 190, 20, 25); ctx.fillRect(430, 190, 20, 25);
+            ctx.fillRect(385, 160, 30, 35);
+            // Window glow
+            ctx.fillStyle = 'rgba(255,221,68,0.3)';
+            ctx.fillRect(345, 135, 30, 35); ctx.fillRect(425, 135, 30, 35);
+            // Gate
+            ctx.fillStyle = '#553311';
+            ctx.fillRect(375, 240, 50, 60);
+            ctx.fillStyle = '#442200';
+            ctx.beginPath(); ctx.arc(400, 240, 25, Math.PI, 0); ctx.fill();
+            // Flags on towers
+            ctx.fillStyle = '#cc2222';
+            ctx.fillRect(312, 20, 3, 40); ctx.fillRect(316, 22, 16, 10);
+            ctx.fillRect(482, 20, 3, 40); ctx.fillRect(486, 22, 16, 10);
+            // Path to castle
+            ctx.fillStyle = '#ccaa66';
+            ctx.fillRect(375, 300, 50, 60);
+            ctx.fillRect(365, 330, 70, 30);
+            // Trees
+            ctx.fillStyle = '#2a7a2a';
+            for (const tx of [120, 200, 580, 680]) {
+                ctx.fillRect(tx+8, 250, 8, 50);
+                ctx.fillStyle = '#228822';
+                ctx.beginPath(); ctx.arc(tx+12, 240, 24, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#2a7a2a';
+                ctx.beginPath(); ctx.arc(tx+12, 225, 18, 0, Math.PI*2); ctx.fill();
+            }
+            break;
+
+        case 'kingdom_dark':
+        case 'kingdom_ruins':
+            // Dark red sky
+            const darkSky = ctx.createLinearGradient(0, 0, 0, h * 0.6);
+            darkSky.addColorStop(0, '#0a0008');
+            darkSky.addColorStop(1, '#2a0a0a');
+            ctx.fillStyle = darkSky;
+            ctx.fillRect(0, 0, w, h * 0.6);
+            // Blood moon
+            ctx.fillStyle = '#882222';
+            ctx.beginPath(); ctx.arc(600, 70, 30, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'rgba(136,34,34,0.2)';
+            ctx.beginPath(); ctx.arc(600, 70, 50, 0, Math.PI * 2); ctx.fill();
+            // Dark clouds
+            ctx.fillStyle = 'rgba(40,10,10,0.6)';
+            ctx.fillRect(50, 30, 120, 20); ctx.fillRect(70, 20, 80, 16);
+            ctx.fillRect(400, 50, 100, 18); ctx.fillRect(420, 40, 60, 14);
+            // Scorched ground
+            ctx.fillStyle = '#1a1008';
+            ctx.fillRect(0, h * 0.6, w, h * 0.4);
+            ctx.fillStyle = '#2a1a0a';
+            for (let i = 0; i < 20; i++) {
+                ctx.fillRect(i * 45, h * 0.6, 30, 8);
+            }
+            // Ruined castle - crumbling walls
+            ctx.fillStyle = '#444444';
+            ctx.fillRect(320, 130, 160, 170);
+            // Left broken tower
+            ctx.fillStyle = '#3a3a3a';
+            ctx.fillRect(295, 90, 45, 210);
+            ctx.fillRect(295, 85, 30, 10); // broken top
+            // Right tower - partially collapsed
+            ctx.fillStyle = '#3a3a3a';
+            ctx.fillRect(460, 120, 45, 180);
+            ctx.fillRect(465, 115, 20, 10);
+            // Cracks in walls
+            ctx.fillStyle = '#222222';
+            ctx.fillRect(340, 140, 4, 60);
+            ctx.fillRect(340, 140, 30, 4);
+            ctx.fillRect(370, 140, 4, 30);
+            ctx.fillRect(420, 180, 4, 80);
+            ctx.fillRect(400, 200, 40, 4);
+            ctx.fillRect(350, 250, 50, 4);
+            ctx.fillRect(460, 160, 30, 4);
+            // Missing chunks
+            ctx.fillStyle = '#1a0a1a';
+            ctx.fillRect(470, 120, 20, 30);
+            ctx.fillRect(440, 130, 15, 25);
+            ctx.fillRect(310, 90, 15, 20);
+            // Dark windows
+            ctx.fillStyle = '#110008';
+            ctx.fillRect(350, 160, 18, 22); ctx.fillRect(420, 160, 18, 22);
+            ctx.fillRect(380, 200, 25, 30);
+            // Fire/ember glow from windows
+            ctx.fillStyle = 'rgba(255,80,20,0.4)';
+            ctx.fillRect(348, 158, 22, 26); ctx.fillRect(418, 158, 22, 26);
+            ctx.fillStyle = 'rgba(255,80,20,0.6)';
+            ctx.fillRect(378, 198, 29, 34);
+            // Rubble on ground
+            ctx.fillStyle = '#555555';
+            for (let i = 0; i < 12; i++) {
+                const rx = 260 + Math.random() * 300;
+                const ry = h * 0.6 + Math.random() * 30;
+                ctx.fillRect(rx, ry, 8 + Math.random() * 15, 6 + Math.random() * 10);
+            }
+            // Dead trees
+            ctx.fillStyle = '#2a1a0a';
+            ctx.fillRect(130, 200, 6, 100);
+            ctx.fillRect(120, 210, 20, 4); ctx.fillRect(140, 195, 15, 3);
+            ctx.fillRect(650, 220, 6, 80);
+            ctx.fillRect(640, 230, 18, 3); ctx.fillRect(655, 215, 12, 3);
+            // Red atmospheric overlay
+            ctx.fillStyle = 'rgba(150,20,20,0.15)';
+            ctx.fillRect(0, 0, w, h);
+            break;
+
+        case 'throne_room':
+            // Stone floor and walls
+            ctx.fillStyle = '#1a1028';
+            ctx.fillRect(0, 0, w, h);
+            // Floor
+            const floorGrad = ctx.createLinearGradient(0, h*0.65, 0, h);
+            floorGrad.addColorStop(0, '#3a2a4a');
+            floorGrad.addColorStop(1, '#2a1a3a');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(0, h * 0.65, w, h * 0.35);
+            // Floor tiles
+            ctx.fillStyle = '#332244';
+            for (let i = 0; i < 16; i++) {
+                ctx.fillRect(i * 55, h * 0.65, 1, h * 0.35);
+            }
+            // Red carpet
+            ctx.fillStyle = '#881122';
+            ctx.fillRect(350, h * 0.65, 100, h * 0.35);
+            ctx.fillStyle = '#771020';
+            ctx.fillRect(360, h * 0.65, 80, h * 0.35);
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(355, h * 0.65, 2, h * 0.35);
+            ctx.fillRect(443, h * 0.65, 2, h * 0.35);
+            // Back wall details
+            ctx.fillStyle = '#2a1a3a';
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 14; col++) {
+                    const bx = col * 60 + (row % 2) * 30;
+                    const by = row * 50;
+                    ctx.strokeStyle = '#1a1028';
+                    ctx.strokeRect(bx, by, 60, 50);
+                }
+            }
+            // Pillars with detail
+            ctx.fillStyle = '#5555775';
+            for (const px of [80, 180, 580, 680]) {
+                ctx.fillStyle = '#555577';
+                ctx.fillRect(px, 30, 40, h * 0.65);
+                ctx.fillStyle = '#666688';
+                ctx.fillRect(px + 5, 30, 30, h * 0.65);
+                // Pillar caps
+                ctx.fillStyle = '#777799';
+                ctx.fillRect(px - 5, 25, 50, 12);
+                ctx.fillRect(px - 5, h * 0.63, 50, 12);
+                // Pillar grooves
+                ctx.fillStyle = '#444466';
+                ctx.fillRect(px + 12, 40, 3, h * 0.6);
+                ctx.fillRect(px + 25, 40, 3, h * 0.6);
+            }
+            // Throne - ornate
+            ctx.fillStyle = '#6B3510';
+            ctx.fillRect(345, 80, 110, 200);
+            // Throne back (tall, carved)
+            ctx.fillStyle = '#7B4520';
+            ctx.fillRect(355, 50, 90, 160);
+            ctx.fillStyle = '#8B5530';
+            ctx.fillRect(365, 60, 70, 140);
+            // Throne cushion
+            ctx.fillStyle = '#cc1133';
+            ctx.fillRect(355, 170, 90, 40);
+            ctx.fillStyle = '#dd2244';
+            ctx.fillRect(360, 175, 80, 30);
+            // Throne armrests
+            ctx.fillStyle = '#6B3510';
+            ctx.fillRect(340, 170, 20, 60);
+            ctx.fillRect(440, 170, 20, 60);
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(345, 172, 10, 8);
+            ctx.fillRect(445, 172, 10, 8);
+            // Crown on throne back
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(375, 55, 50, 20);
+            ctx.fillRect(380, 45, 8, 15);
+            ctx.fillRect(396, 40, 8, 20);
+            ctx.fillRect(412, 45, 8, 15);
+            // Gems on crown
+            ctx.fillStyle = '#cc2222';
+            ctx.fillRect(382, 48, 4, 4);
+            ctx.fillStyle = '#2244cc';
+            ctx.fillRect(398, 43, 4, 4);
+            ctx.fillStyle = '#cc2222';
+            ctx.fillRect(414, 48, 4, 4);
+            // King figure sitting on throne
+            // Body/robe
+            ctx.fillStyle = '#881133';
+            ctx.fillRect(370, 155, 60, 70);
+            // Robe trim
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(370, 155, 60, 4);
+            ctx.fillRect(370, 155, 4, 70);
+            ctx.fillRect(426, 155, 4, 70);
+            // Head
+            ctx.fillStyle = '#ffcc99';
+            ctx.fillRect(382, 120, 36, 35);
+            // Crown on head
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(378, 110, 44, 14);
+            ctx.fillRect(382, 104, 8, 10);
+            ctx.fillRect(396, 100, 8, 14);
+            ctx.fillRect(410, 104, 8, 10);
+            // Gem
+            ctx.fillStyle = '#ff2222';
+            ctx.fillRect(398, 103, 4, 4);
+            // Eyes
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(388, 130, 5, 5);
+            ctx.fillRect(406, 130, 5, 5);
+            // Beard
+            ctx.fillStyle = '#cccccc';
+            ctx.fillRect(386, 142, 28, 15);
+            ctx.fillRect(390, 155, 20, 6);
+            ctx.fillRect(394, 159, 12, 4);
+            // Scepter
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(438, 130, 5, 90);
+            ctx.fillStyle = '#ffdd44';
+            ctx.fillRect(434, 124, 14, 10);
+            ctx.fillStyle = '#44aaff';
+            ctx.fillRect(438, 126, 6, 6);
+            // Torches on pillars
+            for (const tx of [90, 690]) {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(tx + 10, 80, 8, 30);
+                ctx.fillStyle = '#ff6600';
+                ctx.fillRect(tx + 6, 65, 16, 18);
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillRect(tx + 9, 60, 10, 12);
+                ctx.fillStyle = '#ffdd44';
+                ctx.fillRect(tx + 11, 56, 6, 8);
+                // Torch glow
+                ctx.fillStyle = 'rgba(255,150,50,0.15)';
+                ctx.beginPath(); ctx.arc(tx + 14, 70, 60, 0, Math.PI * 2); ctx.fill();
+            }
+            // Banners on walls
+            for (const bx of [260, 500]) {
+                ctx.fillStyle = '#881133';
+                ctx.fillRect(bx, 40, 40, 100);
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillRect(bx + 12, 60, 16, 16);
+                ctx.fillRect(bx, 40, 40, 5);
+                // Banner bottom point
+                ctx.beginPath();
+                ctx.fillStyle = '#881133';
+                ctx.moveTo(bx, 140); ctx.lineTo(bx + 20, 160); ctx.lineTo(bx + 40, 140);
+                ctx.fill();
+            }
+            break;
+
+        case 'knight_departure':
+        case 'knight_sunset':
+            // Sunset sky
+            const sunset = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+            sunset.addColorStop(0, '#1a0a2a');
+            sunset.addColorStop(0.3, '#cc4422');
+            sunset.addColorStop(0.6, '#ff8833');
+            sunset.addColorStop(1, '#ffcc44');
+            ctx.fillStyle = sunset;
+            ctx.fillRect(0, 0, w, h * 0.55);
+            // Setting sun
+            ctx.fillStyle = '#ffdd44';
+            ctx.beginPath(); ctx.arc(400, h * 0.5, 45, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'rgba(255,221,68,0.3)';
+            ctx.beginPath(); ctx.arc(400, h * 0.5, 70, 0, Math.PI * 2); ctx.fill();
+            // Ground
+            ctx.fillStyle = '#2a3a2a';
+            ctx.fillRect(0, h * 0.55, w, h * 0.45);
+            ctx.fillStyle = '#1a2a1a';
+            ctx.fillRect(0, h * 0.55, w, 6);
+            // Path
+            ctx.fillStyle = '#aa8844';
+            ctx.beginPath();
+            ctx.moveTo(370, h); ctx.lineTo(395, h * 0.55);
+            ctx.lineTo(405, h * 0.55); ctx.lineTo(430, h);
+            ctx.fill();
+            // Knight walking on path
+            drawKnight(ctx, 365, h * 0.55 - 30, 4, state.equipment, 0);
+            // Castle silhouette in background
+            ctx.fillStyle = 'rgba(20,15,30,0.6)';
+            ctx.fillRect(100, h * 0.35, 80, 80);
+            ctx.fillRect(90, h * 0.3, 30, 100);
+            ctx.fillRect(170, h * 0.32, 25, 95);
+            break;
+
+        case 'ledger_complete':
+            ctx.fillStyle = '#0a0a2a';
+            ctx.fillRect(0, 0, w, h);
+            // Stars
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 40; i++) {
+                ctx.fillRect((i * 97) % w, (i * 53) % h, 2, 2);
+            }
+            // Glowing ledger book
+            ctx.fillStyle = 'rgba(255,221,68,0.15)';
+            ctx.beginPath(); ctx.arc(400, 170, 120, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'rgba(255,221,68,0.25)';
+            ctx.beginPath(); ctx.arc(400, 170, 80, 0, Math.PI * 2); ctx.fill();
+            // Book
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(340, 110, 120, 140);
+            ctx.fillStyle = '#a0522d';
+            ctx.fillRect(345, 115, 110, 130);
+            // Pages
+            ctx.fillStyle = '#ffeedd';
+            ctx.fillRect(350, 120, 100, 120);
+            // Writing lines
+            ctx.fillStyle = '#886633';
             for (let i = 0; i < 8; i++) {
-                ctx.fillRect(310 + i * 25, 160, 12, 20);
+                ctx.fillRect(360, 135 + i * 13, 80, 2);
+            }
+            // Gold emblem on cover showing through
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = '16px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('THE LEDGER', 400, 290);
+            ctx.fillStyle = '#ffdd44';
+            ctx.font = '10px "Press Start 2P", monospace';
+            ctx.fillText('OF WEALTH', 400, 310);
+            break;
+
+        case 'kingdom_restored':
+            // Bright blue sky
+            const happySky = ctx.createLinearGradient(0, 0, 0, h * 0.6);
+            happySky.addColorStop(0, '#2266cc');
+            happySky.addColorStop(1, '#66aaee');
+            ctx.fillStyle = happySky;
+            ctx.fillRect(0, 0, w, h * 0.6);
+            // Sun
+            ctx.fillStyle = '#ffdd44';
+            ctx.beginPath(); ctx.arc(650, 55, 32, 0, Math.PI * 2); ctx.fill();
+            // Clouds
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillRect(80, 35, 90, 16); ctx.fillRect(95, 25, 60, 14);
+            ctx.fillRect(450, 60, 80, 14); ctx.fillRect(465, 50, 50, 14);
+            // Green hills
+            ctx.fillStyle = '#44bb44';
+            ctx.fillRect(0, h * 0.6, w, h * 0.4);
+            ctx.fillStyle = '#3aaa3a';
+            ctx.beginPath(); ctx.ellipse(250, h*0.6, 200, 30, 0, 0, Math.PI*2); ctx.fill();
+            // Restored castle (same as peaceful but brighter)
+            ctx.fillStyle = '#aaaacc';
+            ctx.fillRect(310, 100, 180, 200);
+            ctx.fillStyle = '#9999bb';
+            ctx.fillRect(290, 60, 50, 240); ctx.fillRect(460, 60, 50, 240);
+            ctx.fillStyle = '#cc3333';
+            ctx.beginPath(); ctx.moveTo(290, 60); ctx.lineTo(315, 20); ctx.lineTo(340, 60); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(460, 60); ctx.lineTo(485, 20); ctx.lineTo(510, 60); ctx.fill();
+            ctx.fillStyle = '#aa2222';
+            ctx.beginPath(); ctx.moveTo(310, 100); ctx.lineTo(400, 55); ctx.lineTo(490, 100); ctx.fill();
+            // Golden lit windows
+            ctx.fillStyle = '#ffdd44';
+            ctx.fillRect(350, 140, 20, 25); ctx.fillRect(430, 140, 20, 25);
+            ctx.fillRect(350, 190, 20, 25); ctx.fillRect(430, 190, 20, 25);
+            ctx.fillRect(385, 160, 30, 35);
+            // Flags
+            ctx.fillStyle = '#cc2222';
+            ctx.fillRect(312, 20, 3, 40); ctx.fillRect(316, 22, 18, 10);
+            ctx.fillRect(482, 20, 3, 40); ctx.fillRect(486, 22, 18, 10);
+            // Celebration - golden sparkles
+            ctx.fillStyle = '#ffdd44';
+            for (let i = 0; i < 20; i++) {
+                const sx = 280 + Math.random() * 240;
+                const sy = 50 + Math.random() * 200;
+                ctx.fillRect(sx, sy, 3, 3);
+            }
+            // People celebrating (tiny pixel figures)
+            ctx.fillStyle = '#cc8866';
+            for (let i = 0; i < 6; i++) {
+                const px = 300 + i * 35;
+                ctx.fillRect(px, 280, 6, 10);
+                ctx.fillRect(px + 1, 275, 4, 5);
             }
             break;
         default:
