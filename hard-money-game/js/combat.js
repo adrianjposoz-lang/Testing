@@ -467,7 +467,6 @@ function onBossDefeated() {
 
     saveGame();
     showScreen('victory');
-    try { audio.playVictoryFanfare(); } catch(e) {}
 }
 
 // ── Player Death ──
@@ -616,8 +615,10 @@ function updateHintButton() {
     const totalHints = combat.hintsRemaining + state.inventory.scroll_hint;
     if (combat.hintsRemaining >= 99) {
         btn.textContent = 'HINT (∞)';
+        btn.disabled = false;
     } else if (totalHints > 0) {
         btn.textContent = `HINT (${totalHints})`;
+        btn.disabled = false;
     } else {
         btn.textContent = 'NO HINTS';
         btn.disabled = true;
