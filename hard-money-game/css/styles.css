@@ -69,7 +69,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 /* =============================================================
    OVERLAY BASE — all screen overlays
    ============================================================= */
-.overlay {
+.overlay, .screen-overlay {
   position: absolute;
   inset: 0;
   display: flex;
@@ -79,6 +79,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   z-index: 50;
   text-align: center;
   padding: 20px;
+  background: var(--bg-darker);
 }
 
 /* =============================================================
@@ -2973,4 +2974,222 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   15% { opacity: 1; transform: translateX(-50%) translateY(0); }
   75% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* =============================================================
+   SKILL TREE
+   ============================================================= */
+.skills-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.skill-tree-content {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skill-xp-display {
+  text-align: center;
+  font-size: 11px;
+  color: var(--gold);
+  padding: 8px;
+  background: rgba(245, 200, 66, 0.1);
+  border: 1px solid rgba(245, 200, 66, 0.3);
+  border-radius: 4px;
+}
+
+.skill-xp-display strong {
+  color: var(--white);
+  font-size: 13px;
+}
+
+.skill-branch-title {
+  font-size: 11px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.skill-branch-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.skill-node {
+  flex-shrink: 0;
+  width: 110px;
+  padding: 10px 8px;
+  background: rgba(22, 33, 62, 0.8);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  text-align: center;
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.skill-node.skill-available {
+  border-color: var(--gold);
+  cursor: pointer;
+  background: rgba(245, 200, 66, 0.08);
+}
+
+.skill-node.skill-owned {
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.skill-node.skill-locked {
+  opacity: 0.4;
+}
+
+.skill-name {
+  font-size: 8px;
+  color: var(--white);
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.skill-desc {
+  font-size: 7px;
+  color: var(--gray);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.skill-cost {
+  font-size: 8px;
+  color: var(--gold);
+}
+
+.skill-owned .skill-cost {
+  color: var(--green);
+}
+
+.skill-arrow {
+  font-size: 14px;
+  color: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .skill-node.skill-available:hover {
+    background: rgba(245, 200, 66, 0.2);
+    transform: scale(1.05);
+  }
+}
+
+.item-stats {
+  font-size: 7px;
+  color: var(--blue);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* =============================================================
+   RANDOM MAP EVENTS
+   ============================================================= */
+.event-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.event-scenario {
+  font-size: 11px;
+  color: var(--white);
+  line-height: 1.8;
+  max-width: 500px;
+  text-align: center;
+  background: rgba(22, 33, 62, 0.8);
+  padding: 16px;
+  border: 1px solid rgba(245, 200, 66, 0.3);
+  border-radius: 6px;
+}
+
+.event-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.event-choice-btn {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  padding: 12px 16px;
+  background: rgba(22, 33, 62, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--white);
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.6;
+  transition: all 0.2s;
+}
+
+@media (hover: hover) {
+  .event-choice-btn:hover {
+    border-color: var(--gold);
+    background: rgba(245, 200, 66, 0.1);
+  }
+}
+
+.event-choice-btn.correct {
+  border-color: #27ae60;
+  background: rgba(39, 174, 96, 0.2);
+}
+
+.event-choice-btn.wrong {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.2);
+}
+
+.event-result {
+  font-size: 10px;
+  max-width: 500px;
+  text-align: center;
+  padding: 12px;
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+.event-result.success {
+  color: #66ff66;
+  background: rgba(39, 174, 96, 0.15);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.event-result.failure {
+  color: #ff6666;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* =============================================================
+   PWA INSTALL BUTTON
+   ============================================================= */
+.install-btn {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1000;
+  font-size: 8px;
+  padding: 8px 12px;
+  background: var(--gold);
+  color: var(--bg-dark);
+  border: none;
 }

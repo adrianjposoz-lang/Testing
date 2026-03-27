@@ -7,6 +7,7 @@ import { QUESTIONS, STAGE_TOPICS } from './questions.js';
 import { drawKnight, drawShopkeeper, drawBoss, drawBackground, drawGoldCoin } from './sprites.js';
 import { audio } from './audio.js';
 import { SaveSystem } from './save.js';
+import { MAP_EVENTS } from './events.js';
 
 let cutsceneQueue = [];
 let cutsceneIndex = 0;
@@ -59,6 +60,9 @@ function wireEvents() {
     document.getElementById('btn-settings').addEventListener('click', () => showScreen('settings'));
     document.getElementById('btn-skills').addEventListener('click', openSkillTree);
     document.getElementById('btn-close-skills').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
+
+    // Map Events
+    document.getElementById('btn-event-continue').addEventListener('click', onEventContinue);
 
     // Map node clicks - use canvas click
     document.getElementById('map-screen').addEventListener('click', onMapClick);
@@ -160,6 +164,11 @@ function onNameConfirm() {
     const name = input.value.trim() || 'Knight';
     state.playerName = name;
     try { audio.playMenuSelect(); } catch(e) {}
+
+    // Tycoon skill: start new games with 50 bonus gold
+    if (hasSkill('tycoon')) {
+        state.gold += 50;
+    }
 
     // Show tutorial screen before starting the intro cutscene
     showScreen('tutorial');
@@ -740,7 +749,28 @@ function onMapClick(e) {
     }
 }
 
+let pendingStage = null;
+
 function launchStage(stageNum) {
+    const boss = BOSS_DATA[stageNum];
+    if (!boss) return;
+
+    // Check for random map event (40% chance, only if not seen this stage)
+    if (state.lastEventStage !== stageNum && Math.random() < 0.4) {
+        const eligible = MAP_EVENTS.filter(ev => ev.minStage <= stageNum);
+        if (eligible.length > 0) {
+            const event = eligible[Math.floor(Math.random() * eligible.length)];
+            state.lastEventStage = stageNum;
+            pendingStage = stageNum;
+            showMapEvent(event);
+            return;
+        }
+    }
+
+    proceedToFight(stageNum);
+}
+
+function proceedToFight(stageNum) {
     const boss = BOSS_DATA[stageNum];
     if (!boss) return;
 
@@ -754,6 +784,87 @@ function launchStage(stageNum) {
             { speaker: '', text: boss.intro, scene: boss.background },
             { speaker: boss.name, text: boss.taunt, scene: boss.background }
         ], () => startFight(stageNum));
+    }
+}
+
+// ── Random Map Events ──
+function showMapEvent(event) {
+    showScreen('event');
+
+    document.getElementById('event-scenario').textContent = event.scenario;
+
+    const choicesContainer = document.getElementById('event-choices');
+    choicesContainer.innerHTML = '';
+
+    const resultDiv = document.getElementById('event-result');
+    resultDiv.classList.add('hidden');
+    resultDiv.className = 'event-result hidden';
+
+    const continueBtn = document.getElementById('btn-event-continue');
+    continueBtn.classList.add('hidden');
+
+    // Shuffle choice order but track correctness
+    const shuffled = event.choices.map((c, i) => ({ ...c, origIndex: i }));
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    shuffled.forEach((choice) => {
+        const btn = document.createElement('button');
+        btn.className = 'event-choice-btn';
+        btn.textContent = choice.text;
+        btn.addEventListener('click', () => {
+            handleEventChoice(btn, choice.correct, event, choicesContainer);
+        });
+        choicesContainer.appendChild(btn);
+    });
+}
+
+function handleEventChoice(selectedBtn, isCorrect, event, container) {
+    // Disable all buttons
+    const allBtns = container.querySelectorAll('.event-choice-btn');
+    allBtns.forEach(btn => {
+        btn.style.pointerEvents = 'none';
+        // Find if this button's text matches the correct choice
+        const matchingChoice = event.choices.find(c => c.text === btn.textContent);
+        if (matchingChoice && matchingChoice.correct) {
+            btn.classList.add('correct');
+        } else if (btn === selectedBtn && !isCorrect) {
+            btn.classList.add('wrong');
+        }
+    });
+
+    const resultDiv = document.getElementById('event-result');
+    resultDiv.classList.remove('hidden');
+
+    if (isCorrect) {
+        resultDiv.className = 'event-result success';
+        state.gold += event.reward.gold;
+        state.xp += event.reward.xp;
+        state.totalXp += event.reward.xp;
+        resultDiv.innerHTML = `✓ CORRECT! +${event.reward.gold} Gold, +${event.reward.xp} XP<br><br>${event.explanation}`;
+        try { audio.playCorrect && audio.playCorrect(); } catch(e) {}
+    } else {
+        resultDiv.className = 'event-result failure';
+        resultDiv.innerHTML = `✗ WRONG<br><br>${event.explanation}`;
+        try { audio.playWrong && audio.playWrong(); } catch(e) {}
+    }
+
+    saveGame();
+
+    const continueBtn = document.getElementById('btn-event-continue');
+    continueBtn.classList.remove('hidden');
+}
+
+function onEventContinue() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    if (pendingStage) {
+        const stage = pendingStage;
+        pendingStage = null;
+        proceedToFight(stage);
+    } else {
+        showScreen('map');
     }
 }
 
@@ -941,9 +1052,11 @@ function renderShopGrid(tab) {
         const el = document.createElement('div');
         el.className = `shop-item${owned && !item.consumable ? ' owned' : ''}${equipped ? ' equipped' : ''}`;
 
+        const statsLine = hasSkill('merchants_eye') ? getItemStats(item) : '';
         el.innerHTML = `
             <div class="item-name">${item.name}</div>
             <div class="item-desc">${item.description}</div>
+            ${statsLine ? `<div class="item-stats">${statsLine}</div>` : ''}
             <div class="item-price">${item.price === 0 ? 'FREE' : (discounted ? `<s>${item.price}</s> ${displayPrice}` : displayPrice) + ' G'}</div>
             ${owned && !item.consumable ? '<div class="item-badge">OWNED</div>' : ''}
             ${equipped ? '<div class="item-badge equipped-badge">EQUIPPED</div>' : ''}
@@ -1018,6 +1131,28 @@ function showPurchaseConfirm(item) {
 function getItemPrice(item) {
     if (item.price === 0) return 0;
     return hasSkill('haggler') ? Math.floor(item.price * 0.9) : item.price;
+}
+
+function getItemStats(item) {
+    const stats = {
+        sword_basic: 'DMG: 1 | Crit: 2',
+        sword_flame: 'DMG: 1 | Crit: 3 | +1 crit dmg',
+        sword_ice: 'DMG: 1 | Crit: 3 | +1 crit dmg',
+        sword_golden: 'DMG: 1 | Crit: 2 | +10% gold',
+        helmet_iron: 'Cosmetic only',
+        helmet_gold: 'Cosmetic only',
+        helmet_horned: '+1 max HP',
+        armor_basic: 'No bonus',
+        armor_chain: 'Cosmetic only',
+        armor_plate: '+1 max HP',
+        armor_golden: '+1 max HP | Golden set piece',
+        potion_hp: 'Heal 1 HP mid-fight (use in combat)',
+        potion_time: '+5 sec timer for entire fight',
+        scroll_hint: '+1 hint for next fight',
+        shield_block: 'Block 1 wrong answer next fight',
+        gold_charm: '+25% gold for 1 fight',
+    };
+    return stats[item.id] || '';
 }
 
 function confirmPurchase(item) {
@@ -1365,7 +1500,7 @@ let studyCorrect = 0;
 let studyTotal = 0;
 
 function openStudyMode() {
-    try { audio.playMenuSelect(); } catch(e) {}
+    try { audio.playMenuSelect(); audio.playStudyMusic(); } catch(e) {}
     // Reset study area
     document.getElementById('study-area').classList.add('hidden');
     document.getElementById('btn-study-next').classList.add('hidden');
@@ -1722,4 +1857,110 @@ function onJournalAnswer(index, q) {
 
     // Auto-save progress
     saveGame();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SKILL TREE
+// ══════════════════════════════════════════════════════════════
+const SKILL_TREE = {
+    knowledge: {
+        name: 'Knowledge', color: '#4488ff',
+        skills: [
+            { id: 'scholars_focus', name: "Scholar's Focus", cost: 50, desc: 'Timer +2 seconds on all questions', requires: null },
+            { id: 'quick_study', name: 'Quick Study', cost: 100, desc: '+5% gold from correct answers', requires: 'scholars_focus' },
+            { id: 'appraisers_eye', name: "Appraiser's Eye", cost: 150, desc: 'Timer +3 sec on Stage 4+ questions', requires: 'quick_study' },
+            { id: 'master_lender', name: 'Master Lender', cost: 250, desc: 'Questions show topic hint', requires: 'appraisers_eye' },
+            { id: 'sage_wisdom', name: 'Sage Wisdom', cost: 400, desc: 'Start each fight with 1 free hint', requires: 'master_lender' },
+        ]
+    },
+    combat: {
+        name: 'Combat', color: '#ff4444',
+        skills: [
+            { id: 'iron_will', name: 'Iron Will', cost: 50, desc: '+1 max HP permanently', requires: null },
+            { id: 'battle_hardened', name: 'Battle Hardened', cost: 100, desc: 'First wrong answer deals 0 damage', requires: 'iron_will' },
+            { id: 'berserker', name: 'Berserker', cost: 150, desc: '3+ combo deals double boss damage', requires: 'battle_hardened' },
+            { id: 'phoenix_heart', name: 'Phoenix Heart', cost: 250, desc: 'Survive death once per fight with 1 HP', requires: 'berserker' },
+            { id: 'legendary_knight', name: 'Legendary Knight', cost: 400, desc: '+1 max HP and +1 shield per fight', requires: 'phoenix_heart' },
+        ]
+    },
+    wealth: {
+        name: 'Wealth', color: '#f5c842',
+        skills: [
+            { id: 'haggler', name: 'Haggler', cost: 50, desc: '10% shop discount', requires: null },
+            { id: 'treasure_hunter', name: 'Treasure Hunter', cost: 100, desc: '+15% gold from fights', requires: 'haggler' },
+            { id: 'merchants_eye', name: "Merchant's Eye", cost: 150, desc: 'See detailed item stats', requires: 'treasure_hunter' },
+            { id: 'golden_touch', name: 'Golden Touch', cost: 250, desc: '+25% gold from fights (stacks)', requires: 'merchants_eye' },
+            { id: 'tycoon', name: 'Tycoon', cost: 400, desc: 'Start new games with 50 gold', requires: 'golden_touch' },
+        ]
+    }
+};
+
+function canUnlock(skill) {
+    if (hasSkill(skill.id)) return false;
+    if (state.xp < skill.cost) return false;
+    if (skill.requires && !hasSkill(skill.requires)) return false;
+    return true;
+}
+
+function unlockSkill(skill) {
+    if (!canUnlock(skill)) return;
+    state.xp -= skill.cost;
+    state.skills[skill.id] = true;
+    try { audio.playPurchase(); } catch(e) {}
+    saveGame();
+    renderSkillTree();
+}
+
+function openSkillTree() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    renderSkillTree();
+    showScreen('skills');
+}
+
+function renderSkillTree() {
+    const container = document.getElementById('skill-tree-content');
+    container.innerHTML = `
+        <div class="skill-xp-display">Available XP: <strong>${state.xp}</strong> | Total Earned: ${state.totalXp}</div>
+    `;
+
+    for (const [branchKey, branch] of Object.entries(SKILL_TREE)) {
+        const branchEl = document.createElement('div');
+        branchEl.className = 'skill-branch';
+        branchEl.innerHTML = `<h3 class="skill-branch-title" style="color: ${branch.color}">${branch.name}</h3>`;
+
+        const skillsRow = document.createElement('div');
+        skillsRow.className = 'skill-branch-row';
+
+        branch.skills.forEach((skill, i) => {
+            const owned = hasSkill(skill.id);
+            const available = canUnlock(skill);
+            const locked = !owned && !available;
+
+            const node = document.createElement('div');
+            node.className = `skill-node ${owned ? 'skill-owned' : ''} ${available ? 'skill-available' : ''} ${locked ? 'skill-locked' : ''}`;
+            node.style.borderColor = owned ? branch.color : '';
+            node.innerHTML = `
+                <div class="skill-name">${skill.name}</div>
+                <div class="skill-desc">${skill.desc}</div>
+                <div class="skill-cost">${owned ? 'UNLOCKED' : `${skill.cost} XP`}</div>
+            `;
+
+            if (available) {
+                node.addEventListener('click', () => unlockSkill(skill));
+            }
+
+            skillsRow.appendChild(node);
+
+            // Add connector arrow between skills
+            if (i < branch.skills.length - 1) {
+                const arrow = document.createElement('div');
+                arrow.className = 'skill-arrow';
+                arrow.textContent = '\u2192';
+                skillsRow.appendChild(arrow);
+            }
+        });
+
+        branchEl.appendChild(skillsRow);
+        container.appendChild(branchEl);
+    }
 }

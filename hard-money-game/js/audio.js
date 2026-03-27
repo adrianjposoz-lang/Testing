@@ -832,6 +832,171 @@ export const audio = (() => {
     scheduleLoop(pattern, barDuration);
   }
 
+  // --- Boss-specific battle music variations ---
+  // Each boss has a unique key/tempo variation to make fights feel distinct
+  const BOSS_MUSIC = {
+    1: { bpm: 110, key: 'E', mood: 'minor' },    // Loan Goblin - sneaky
+    2: { bpm: 130, key: 'A', mood: 'minor' },     // Interest Rate Imp - frantic
+    3: { bpm: 100, key: 'D', mood: 'minor' },     // Collateral Crab - heavy
+    4: { bpm: 95, key: 'Bb', mood: 'dim' },       // Appraisal Ghost - eerie
+    5: { bpm: 115, key: 'G', mood: 'minor' },     // Escrow Ogre - stompy
+    6: { bpm: 140, key: 'E', mood: 'minor' },     // LTV Werewolf - wild
+    7: { bpm: 120, key: 'Eb', mood: 'minor' },    // Default Demon - dark
+    8: { bpm: 135, key: 'A', mood: 'minor' },     // Underwriting Hydra - chaotic
+    9: { bpm: 125, key: 'D', mood: 'minor' },     // Foreclosure Phoenix - dramatic
+    10: { bpm: 145, key: 'E', mood: 'minor' },    // ARV Dragon - epic final boss
+  };
+
+  // Scale note offsets for minor key
+  const MINOR_SCALE = [0, 2, 3, 5, 7, 8, 10]; // semitones
+  const BASE_FREQS = {
+    'C': 130.81, 'D': 146.83, 'E': 164.81, 'Eb': 155.56,
+    'F': 174.61, 'G': 196.00, 'A': 220.00, 'Bb': 233.08, 'B': 246.94
+  };
+
+  function bossFreq(rootName, scaleIndex, octaveOffset) {
+    const root = BASE_FREQS[rootName] || 164.81;
+    const semitones = MINOR_SCALE[((scaleIndex % 7) + 7) % 7];
+    return root * Math.pow(2, semitones / 12 + (octaveOffset || 0));
+  }
+
+  function playBossBattleMusic(stageNum) {
+    ensureCtx();
+    stopAllMusicNodes();
+
+    const cfg = BOSS_MUSIC[stageNum] || BOSS_MUSIC[1];
+    const beat = 60 / cfg.bpm;
+    const barDuration = beat * 16;
+    const root = cfg.key;
+
+    // Generate melody pattern from scale
+    const melodyPattern = [0,0,2,2,3,3,4,4, 0,0,2,2,3,3,2,2, 0,0,2,2,3,3,4,4, 3,3,2,2,1,1,0,0];
+    const bassPattern = [0,null,0,null,3,null,3,null, 0,null,0,null,4,null,3,null, 0,null,0,null,3,null,3,null, 2,null,3,null,2,null,0,null];
+
+    // Boss-specific embellishments
+    const intensity = stageNum / 10; // 0.1 to 1.0
+
+    function pattern(startTime) {
+      const nodes = [];
+      const eighth = beat / 2;
+
+      // Melody (square wave)
+      melodyPattern.forEach((deg, i) => {
+        const s = startTime + i * eighth;
+        const freq = bossFreq(root, deg, 1);
+        const vol = 0.14 + intensity * 0.06;
+        const { osc: o } = playNote('square', freq, s, eighth * 0.8, musicGain, vol);
+        nodes.push(o);
+      });
+
+      // Bass (triangle)
+      bassPattern.forEach((deg, i) => {
+        if (deg === null) return;
+        const s = startTime + i * eighth;
+        const freq = bossFreq(root, deg, 0);
+        const { osc: o } = playNote('triangle', freq, s, eighth * 0.7, musicGain, 0.12);
+        nodes.push(o);
+      });
+
+      // Percussion: kick on every beat, snare-noise on 2 and 4
+      for (let b = 0; b < 16; b++) {
+        const s = startTime + b * beat;
+        // Kick
+        const kg = ctx.createGain();
+        kg.connect(musicGain);
+        kg.gain.setValueAtTime(0.1 + intensity * 0.04, s);
+        kg.gain.linearRampToValueAtTime(0, s + 0.06);
+        const ko = ctx.createOscillator();
+        ko.type = 'sine';
+        ko.frequency.setValueAtTime(80 + stageNum * 3, s);
+        ko.frequency.exponentialRampToValueAtTime(25, s + 0.06);
+        ko.connect(kg);
+        ko.start(s);
+        ko.stop(s + 0.06);
+        nodes.push(ko);
+
+        // Snare on beats 2, 4 (off-beats)
+        if (b % 4 === 2) {
+          const ng = ctx.createGain();
+          ng.connect(musicGain);
+          ng.gain.setValueAtTime(0.06 + intensity * 0.03, s);
+          ng.gain.linearRampToValueAtTime(0, s + 0.08);
+          const nf = ctx.createBiquadFilter();
+          nf.type = 'highpass';
+          nf.frequency.setValueAtTime(1000, s);
+          nf.connect(ng);
+          const n = noise(0.08, nf);
+          n.start(s);
+          n.stop(s + 0.08);
+          nodes.push(n);
+        }
+      }
+
+      // High arpeggios for later bosses (stage 6+)
+      if (stageNum >= 6) {
+        for (let i = 0; i < 8; i++) {
+          const s = startTime + i * beat * 2;
+          const arpDeg = [0, 2, 4, 2][i % 4];
+          const freq = bossFreq(root, arpDeg, 2);
+          const { osc: o } = playNote('square', freq, s, beat * 0.3, musicGain, 0.04 + intensity * 0.02);
+          nodes.push(o);
+        }
+      }
+
+      return nodes;
+    }
+
+    scheduleLoop(pattern, barDuration);
+  }
+
+  // --- Study/Glossary ambient music ---
+  function playStudyMusic() {
+    ensureCtx();
+    stopAllMusicNodes();
+
+    const bpm = 60;
+    const beat = 60 / bpm;
+    const barDuration = beat * 16;
+
+    // Gentle ambient pads in C major
+    const padNotes = [
+      { note: 'C4', beat: 0, dur: 8 },
+      { note: 'E4', beat: 0, dur: 8 },
+      { note: 'G4', beat: 0, dur: 8 },
+      { note: 'F4', beat: 8, dur: 8 },
+      { note: 'A4', beat: 8, dur: 8 },
+      { note: 'C5', beat: 8, dur: 8 },
+    ];
+
+    // Sparse melody
+    const melNotes = [
+      { note: 'E5', beat: 2, dur: 2 },
+      { note: 'D5', beat: 6, dur: 2 },
+      { note: 'C5', beat: 10, dur: 2 },
+      { note: 'E5', beat: 14, dur: 2 },
+    ];
+
+    function pattern(startTime) {
+      const nodes = [];
+
+      padNotes.forEach((n) => {
+        const s = startTime + n.beat * beat;
+        const { osc: o } = playNote('sine', nf(n.note), s, n.dur * beat * 0.95, musicGain, 0.04);
+        nodes.push(o);
+      });
+
+      melNotes.forEach((n) => {
+        const s = startTime + n.beat * beat;
+        const { osc: o } = playNote('triangle', nf(n.note), s, n.dur * beat * 0.8, musicGain, 0.06);
+        nodes.push(o);
+      });
+
+      return nodes;
+    }
+
+    scheduleLoop(pattern, barDuration);
+  }
+
   function stopMusic() {
     if (!ctx) return;
     ensureCtx();
@@ -879,9 +1044,11 @@ export const audio = (() => {
     playTimerTick,
 
     playBattleMusic,
+    playBossBattleMusic,
     playShopMusic,
     playMapMusic,
     playTitleMusic,
+    playStudyMusic,
     stopMusic,
   };
 })();

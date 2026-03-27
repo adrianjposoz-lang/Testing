@@ -2,9 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>The Ledger & The Sword</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>⚔️</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f5c842">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ledger & Sword">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -295,6 +301,22 @@
             <button class="pixel-btn" id="btn-close-glossary">BACK TO MAP</button>
         </div>
 
+        <!-- Random Map Event -->
+        <div id="event-screen" class="screen-overlay event-overlay hidden">
+            <h2 class="screen-title">LENDING SCENARIO</h2>
+            <div id="event-scenario" class="event-scenario"></div>
+            <div id="event-choices" class="event-choices"></div>
+            <div id="event-result" class="event-result hidden"></div>
+            <button class="pixel-btn hidden" id="btn-event-continue">CONTINUE TO BATTLE</button>
+        </div>
+
+        <!-- Skill Tree -->
+        <div id="skills-screen" class="screen-overlay skills-overlay hidden">
+            <h2 class="screen-title">SKILL TREE</h2>
+            <button class="pixel-btn small close-btn" id="btn-close-skills">&#10005; CLOSE</button>
+            <div id="skill-tree-content" class="skill-tree-content"></div>
+        </div>
+
         <!-- Mistake Journal -->
         <div id="journal-screen" class="screen-overlay journal-overlay hidden">
             <h2 class="screen-title">MISTAKE JOURNAL</h2>
@@ -345,6 +367,28 @@
         </div>
     </div>
 
+    <button id="btn-install" class="pixel-btn install-btn hidden">INSTALL APP</button>
+
     <script type="module" src="js/game.js"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('btn-install').classList.remove('hidden');
+    });
+    document.getElementById('btn-install').addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
+                document.getElementById('btn-install').classList.add('hidden');
+            });
+        }
+    });
+    </script>
 </body>
 </html>

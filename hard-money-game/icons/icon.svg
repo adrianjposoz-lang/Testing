@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#1a1a2e"/>
+  <rect x="128" y="128" width="256" height="256" rx="32" fill="#16213e" stroke="#f5c842" stroke-width="8"/>
+  <!-- Sword -->
+  <line x1="200" y1="380" x2="312" y2="132" stroke="#f5c842" stroke-width="16" stroke-linecap="round"/>
+  <line x1="240" y1="200" x2="280" y2="220" stroke="#f5c842" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="210" cy="360" r="12" fill="#f5c842"/>
+  <!-- L letter -->
+  <text x="256" y="320" text-anchor="middle" font-family="serif" font-size="120" fill="#f5c842" font-weight="bold">L</text>
+</svg>

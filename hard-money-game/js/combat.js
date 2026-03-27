@@ -102,7 +102,7 @@ export function startFight(stageNum) {
     updatePotionButton();
     showScreen('combat');
 
-    try { audio.stopMusic(); audio.playBattleMusic(); } catch(e) {}
+    try { audio.stopMusic(); audio.playBossBattleMusic(stageNum); } catch(e) {}
 
     // Boss mechanic state
     combat.mechanicState = {};

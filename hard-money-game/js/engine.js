@@ -5,6 +5,7 @@ import { SHOP_ITEMS, getRandomQuote } from './shop.js';
 import { SaveSystem } from './save.js';
 import { drawKnight, drawBoss, drawBackground, drawGoldCoin, drawHeart } from './sprites.js';
 import { audio } from './audio.js';
+import { MAP_EVENTS } from './events.js';
 
 // ── Game State ──
 export const state = {
@@ -33,7 +34,8 @@ export const state = {
     mistakeJournal: [],
     xp: 0,
     totalXp: 0,
-    skills: {}
+    skills: {},
+    lastEventStage: 0
 };
 
 // ── Combat State ──
@@ -875,7 +877,7 @@ export function getMapNodePos(stage) {
 let lastScreen = '';
 export function showScreen(screenName) {
     // Screen transition effect for major screen changes
-    const majorScreens = ['map', 'combat', 'shop', 'victory', 'death', 'complete'];
+    const majorScreens = ['map', 'combat', 'shop', 'victory', 'death', 'complete', 'event'];
     if (majorScreens.includes(screenName) && lastScreen !== screenName && lastScreen !== '') {
         const trans = document.getElementById('screen-transition');
         if (trans) {
@@ -980,6 +982,9 @@ export function showScreen(screenName) {
         case 'skills':
             document.getElementById('skills-screen').classList.remove('hidden');
             break;
+        case 'event':
+            document.getElementById('event-screen').classList.remove('hidden');
+            break;
     }
 }
 
@@ -993,7 +998,8 @@ export function saveGame() {
         codexViewed: [...state.codexViewed],
         xp: state.xp,
         totalXp: state.totalXp,
-        skills: state.skills
+        skills: state.skills,
+        lastEventStage: state.lastEventStage
     };
     SaveSystem.save(data);
 }
@@ -1025,5 +1031,6 @@ export function loadGame() {
     state.xp = data.xp || 0;
     state.totalXp = data.totalXp || 0;
     state.skills = data.skills || {};
+    state.lastEventStage = data.lastEventStage || 0;
     return true;
 }

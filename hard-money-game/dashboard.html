@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Instructor Dashboard — The Ledger & The Sword</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --panel: #16213e;
+            --gold: #f5c842;
+            --white: #ecf0f1;
+            --gray: #7f8c8d;
+            --green: #27ae60;
+            --red: #e74c3c;
+            --blue: #3498db;
+            --font: 'Press Start 2P', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--white); font-family: var(--font); font-size: 10px; line-height: 1.8; padding: 20px; }
+        h1 { color: var(--gold); font-size: 16px; text-align: center; margin-bottom: 20px; }
+        h2 { color: var(--gold); font-size: 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(245,200,66,0.3); padding-bottom: 6px; }
+        h3 { color: var(--white); font-size: 10px; margin-bottom: 8px; }
+        .dashboard { max-width: 900px; margin: 0 auto; }
+        .no-data { text-align: center; color: var(--gray); padding: 60px 20px; font-size: 11px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .stat-card { background: var(--panel); border: 1px solid rgba(245,200,66,0.2); border-radius: 6px; padding: 14px; text-align: center; }
+        .stat-value { font-size: 18px; color: var(--gold); margin-bottom: 4px; }
+        .stat-label { font-size: 8px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+        .section { background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; margin-bottom: 20px; }
+        .topic-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .topic-name { flex: 1; }
+        .topic-bar-container { flex: 2; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; margin: 0 12px; overflow: hidden; }
+        .topic-bar { height: 100%; border-radius: 6px; transition: width 0.5s; }
+        .topic-pct { width: 50px; text-align: right; font-size: 9px; }
+        .weakness { color: var(--red); }
+        .strength { color: var(--green); }
+        .mistake-list { max-height: 300px; overflow-y: auto; }
+        .mistake-item { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .mistake-q { color: var(--white); margin-bottom: 4px; }
+        .mistake-meta { color: var(--gray); font-size: 8px; }
+        .progress-timeline { display: flex; flex-direction: column; gap: 8px; }
+        .timeline-entry { display: flex; align-items: center; gap: 12px; font-size: 9px; }
+        .timeline-stage { color: var(--gold); width: 70px; }
+        .timeline-status { flex: 1; }
+        .timeline-status.complete { color: var(--green); }
+        .timeline-status.current { color: var(--blue); }
+        .timeline-status.locked { color: var(--gray); }
+        .export-btn { font-family: var(--font); font-size: 9px; padding: 10px 20px; background: var(--gold); color: var(--bg); border: none; border-radius: 4px; cursor: pointer; margin: 10px 0; }
+        .export-btn:hover { background: #e0b435; }
+        .player-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .player-name { font-size: 14px; color: var(--gold); }
+        .refresh-note { font-size: 8px; color: var(--gray); text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>INSTRUCTOR DASHBOARD</h1>
+        <div id="content"></div>
+        <p class="refresh-note">Data loads from the player's browser localStorage. Open this page in the same browser as the game.</p>
+    </div>
+
+    <script>
+        const SAVE_KEY = 'ledger_and_sword_save';
+        const STAGE_TOPICS = {
+            1: 'Basic Lending Terms', 2: 'Interest Rates & APR', 3: 'Collateral & Secured Lending',
+            4: 'Property Appraisals', 5: 'Escrow, Closing & Title', 6: 'LTV Ratios & Calculations',
+            7: 'Defaults & Foreclosure', 8: 'Underwriting & Evaluation', 9: 'Foreclosure Process & REO',
+            10: 'ARV & Advanced Concepts'
+        };
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(SAVE_KEY);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch { return null; }
+        }
+
+        function render() {
+            const data = loadData();
+            const el = document.getElementById('content');
+
+            if (!data) {
+                el.innerHTML = '<div class="no-data">No game data found.<br><br>The player must have an active save in this browser.</div>';
+                return;
+            }
+
+            const accuracy = data.totalAnswered > 0 ? Math.round((data.totalCorrect / data.totalAnswered) * 100) : 0;
+            const journal = data.mistakeJournal || [];
+            const skills = data.skills || {};
+            const skillCount = Object.values(skills).filter(Boolean).length;
+            const completedStages = data.completedStages || [];
+
+            // Topic accuracy from journal
+            const topicStats = {};
+            for (let i = 1; i <= 10; i++) {
+                topicStats[i] = { wrong: 0, corrected: 0, topic: STAGE_TOPICS[i] };
+            }
+            journal.forEach(e => {
+                if (topicStats[e.stage]) {
+                    topicStats[e.stage].wrong += e.reviewedWrong || 0;
+                    topicStats[e.stage].corrected += e.reviewedCorrect || 0;
+                }
+            });
+
+            // Find weakest and strongest topics
+            const topicEntries = Object.entries(topicStats).filter(([_, v]) => v.wrong > 0 || v.corrected > 0);
+            const weakest = topicEntries.sort((a, b) => (b[1].wrong - b[1].corrected) - (a[1].wrong - a[1].corrected));
+
+            el.innerHTML = `
+                <div class="player-header">
+                    <span class="player-name">Sir ${data.playerName || 'Knight'}</span>
+                    <button class="export-btn" onclick="exportCSV()">EXPORT CSV</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${data.currentStage || 1}</div>
+                        <div class="stat-label">Current Stage</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${accuracy}%</div>
+                        <div class="stat-label">Overall Accuracy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.totalAnswered || 0}</div>
+                        <div class="stat-label">Questions Answered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.totalKills || 0}</div>
+                        <div class="stat-label">Bosses Defeated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.bestCombo || 0}x</div>
+                        <div class="stat-label">Best Combo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.totalXp || 0}</div>
+                        <div class="stat-label">Total XP Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${skillCount}/15</div>
+                        <div class="stat-label">Skills Unlocked</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${journal.length}</div>
+                        <div class="stat-label">Unique Mistakes</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>STAGE PROGRESS</h2>
+                    <div class="progress-timeline">
+                        ${Array.from({length: 10}, (_, i) => {
+                            const s = i + 1;
+                            const completed = completedStages.includes(s);
+                            const current = data.currentStage === s;
+                            const status = completed ? 'complete' : current ? 'current' : 'locked';
+                            const deaths = (data.deathsPerStage || {})[s] || 0;
+                            return `<div class="timeline-entry">
+                                <span class="timeline-stage">Stage ${s}</span>
+                                <span class="timeline-status ${status}">
+                                    ${completed ? '✓ Complete' : current ? '→ Current' : '○ Locked'}
+                                    ${deaths > 0 ? ` (${deaths} deaths)` : ''}
+                                </span>
+                                <span style="color:var(--gray)">${STAGE_TOPICS[s]}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>TOPIC PERFORMANCE</h2>
+                    ${Object.entries(topicStats).map(([stage, s]) => {
+                        const total = s.wrong + s.corrected;
+                        const pct = total > 0 ? Math.round((s.corrected / total) * 100) : -1;
+                        const barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--red)';
+                        return `<div class="topic-row">
+                            <span class="topic-name">${stage}. ${s.topic}</span>
+                            <div class="topic-bar-container">
+                                <div class="topic-bar" style="width:${pct >= 0 ? pct : 0}%; background:${barColor}"></div>
+                            </div>
+                            <span class="topic-pct ${pct >= 70 ? 'strength' : pct >= 0 && pct < 40 ? 'weakness' : ''}">${pct >= 0 ? pct + '%' : 'N/A'}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+
+                <div class="section">
+                    <h2>WEAKEST AREAS (Most Missed Questions)</h2>
+                    <div class="mistake-list">
+                        ${journal.length === 0 ? '<p style="color:var(--gray)">No mistakes recorded yet.</p>' :
+                        journal.sort((a, b) => b.reviewedWrong - a.reviewedWrong).slice(0, 15).map(e => `
+                            <div class="mistake-item">
+                                <div class="mistake-q">${e.question}</div>
+                                <div class="mistake-meta">
+                                    Stage ${e.stage} · Missed ${e.reviewedWrong}x · Corrected ${e.reviewedCorrect}x ·
+                                    <span style="color:var(--green)">Answer: ${e.correctAnswer}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>SKILLS UNLOCKED</h2>
+                    ${skillCount === 0 ? '<p style="color:var(--gray)">No skills unlocked yet.</p>' :
+                    Object.keys(skills).filter(k => skills[k]).map(k =>
+                        `<span style="display:inline-block; padding:4px 8px; margin:4px; background:rgba(39,174,96,0.2); border:1px solid var(--green); border-radius:4px; font-size:8px;">${k.replace(/_/g, ' ')}</span>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        function exportCSV() {
+            const data = loadData();
+            if (!data) return;
+
+            const journal = data.mistakeJournal || [];
+            const accuracy = data.totalAnswered > 0 ? Math.round((data.totalCorrect / data.totalAnswered) * 100) : 0;
+
+            let csv = 'Metric,Value\n';
+            csv += `Player Name,Sir ${data.playerName}\n`;
+            csv += `Current Stage,${data.currentStage}\n`;
+            csv += `Overall Accuracy,${accuracy}%\n`;
+            csv += `Total Questions,${data.totalAnswered}\n`;
+            csv += `Total Correct,${data.totalCorrect}\n`;
+            csv += `Bosses Defeated,${data.totalKills}\n`;
+            csv += `Best Combo,${data.bestCombo}\n`;
+            csv += `Total XP,${data.totalXp || 0}\n`;
+            csv += `Gold,${data.gold}\n`;
+            csv += `Unique Mistakes,${journal.length}\n`;
+            csv += '\nMistake Journal\n';
+            csv += 'Stage,Question,Correct Answer,Times Missed,Times Corrected\n';
+            journal.forEach(e => {
+                csv += `${e.stage},"${e.question.replace(/"/g, '""')}","${e.correctAnswer.replace(/"/g, '""')}",${e.reviewedWrong},${e.reviewedCorrect}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ledger_sword_report_${data.playerName || 'player'}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        render();
+    </script>
+</body>
+</html>
