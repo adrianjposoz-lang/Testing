@@ -54,6 +54,18 @@ export const combat = {
     bossStage: 1
 };
 
+// ── Animation State ──
+export const anim = {
+    bossHit: 0,        // frames remaining for boss hit flash
+    playerHit: 0,      // frames remaining for player hit flash
+    knightAttack: 0,   // frames remaining for knight lunge
+    bossAttack: 0,     // frames remaining for boss lunge
+    slashX: 0,         // slash effect position
+    slashY: 0,
+    slashFrame: 0,     // slash effect animation frame
+    showSlash: false,
+};
+
 // ── Rendering ──
 let canvas, ctx, frame = 0;
 let animationId;
@@ -138,13 +150,104 @@ function renderTitle() {
 }
 
 function renderCombat() {
-    const bossData = BOSS_DATA[combat.bossStage];
     // Background
     drawBackground(ctx, WIDTH, HEIGHT, combat.bossStage);
-    // Knight on left
-    drawKnight(ctx, 120, 300, 3, state.equipment, frame);
-    // Boss on right
-    drawBoss(ctx, 520, 220, 3, combat.bossStage, frame);
+
+    // Knight position with attack lunge
+    let knightX = 120;
+    let knightY = 300;
+    if (anim.knightAttack > 0) {
+        // Lunge forward toward boss
+        const progress = anim.knightAttack / 12;
+        const lunge = Math.sin(progress * Math.PI) * 80;
+        knightX += lunge;
+        anim.knightAttack--;
+    }
+
+    // Boss position with attack lunge
+    let bossX = 520;
+    let bossY = 220;
+    if (anim.bossAttack > 0) {
+        // Lunge toward player
+        const progress = anim.bossAttack / 12;
+        const lunge = Math.sin(progress * Math.PI) * 60;
+        bossX -= lunge;
+        anim.bossAttack--;
+    }
+
+    // Draw knight (flash white when hit)
+    if (anim.playerHit > 0) {
+        // Flash: alternate visible/invisible every 3 frames
+        if (Math.floor(anim.playerHit / 3) % 2 === 0) {
+            drawKnight(ctx, knightX, knightY, 3, state.equipment, frame);
+        }
+        // Shake the knight position
+        knightX += (Math.random() - 0.5) * 8;
+        anim.playerHit--;
+    } else {
+        drawKnight(ctx, knightX, knightY, 3, state.equipment, frame);
+    }
+
+    // Draw boss (flash when hit)
+    if (anim.bossHit > 0) {
+        if (Math.floor(anim.bossHit / 3) % 2 === 0) {
+            drawBoss(ctx, bossX, bossY, 3, combat.bossStage, frame);
+        }
+        anim.bossHit--;
+    } else {
+        drawBoss(ctx, bossX, bossY, 3, combat.bossStage, frame);
+    }
+
+    // Draw slash effect
+    if (anim.showSlash && anim.slashFrame > 0) {
+        drawSlashEffect(ctx, anim.slashX, anim.slashY, anim.slashFrame);
+        anim.slashFrame--;
+        if (anim.slashFrame <= 0) anim.showSlash = false;
+    }
+}
+
+function drawSlashEffect(ctx, x, y, frame) {
+    const progress = 1 - (frame / 10);
+    const size = 40 + progress * 30;
+    const alpha = frame / 10;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y);
+    ctx.rotate(-0.5 + progress * 0.3);
+
+    // Slash lines - diagonal cuts
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4 - progress * 2;
+    ctx.shadowColor = '#ffdd44';
+    ctx.shadowBlur = 15;
+
+    // Main slash
+    ctx.beginPath();
+    ctx.moveTo(-size, -size * 0.6);
+    ctx.lineTo(size, size * 0.6);
+    ctx.stroke();
+
+    // Cross slash
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.8, size * 0.4);
+    ctx.lineTo(size * 0.8, -size * 0.4);
+    ctx.stroke();
+
+    // Sparkles
+    ctx.fillStyle = '#ffff88';
+    for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2 + progress * 3;
+        const dist = size * 0.6 * progress;
+        const sx = Math.cos(angle) * dist;
+        const sy = Math.sin(angle) * dist;
+        const sparkSize = (1 - progress) * 4;
+        ctx.fillRect(sx - sparkSize/2, sy - sparkSize/2, sparkSize, sparkSize);
+    }
+
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    ctx.globalAlpha = 1;
 }
 
 function renderMap() {

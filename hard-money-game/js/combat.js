@@ -2,7 +2,7 @@
 import { QUESTIONS } from './questions.js';
 import { BOSS_DATA } from './cutscenes.js';
 import { audio } from './audio.js';
-import { state, combat, showScreen, saveGame, getFrame } from './engine.js';
+import { state, combat, showScreen, saveGame, getFrame, anim } from './engine.js';
 
 // ── Start Fight ──
 export function startFight(stageNum) {
@@ -214,6 +214,14 @@ function onCorrectAnswer() {
     combat.goldEarned += goldGain;
     state.gold += goldGain;
 
+    // Trigger attack animation - knight lunges, boss flashes
+    anim.knightAttack = 12;
+    anim.bossHit = 18;
+    anim.showSlash = true;
+    anim.slashX = 560;
+    anim.slashY = 280;
+    anim.slashFrame = 10;
+
     updateHpBars();
     document.getElementById('combat-gold').textContent = state.gold;
     spawnDamageNumber(`-${damage}`, 560, 250, 'boss', isCritical);
@@ -239,6 +247,9 @@ function onWrongAnswer(q) {
     } else {
         combat.playerHp = Math.max(0, combat.playerHp - 1);
         try { audio.playHit(); } catch(e) {}
+        // Trigger boss attack animation - boss lunges, player flashes
+        anim.bossAttack = 12;
+        anim.playerHit = 18;
         spawnDamageNumber('-1', 150, 330, 'player', false);
         flashScreen('red');
     }
