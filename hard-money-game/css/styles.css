@@ -528,13 +528,28 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 .hint-btn:disabled { opacity: 0.3; cursor: default; }
 
 .explanation {
-  background: rgba(0,0,0,0.4);
-  padding: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 12px 14px;
   border-left: 3px solid var(--gold);
   text-align: left;
   font-size: 10px;
   line-height: 1.6;
   color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.explanation-continue {
+  font-size: 9px !important;
+  padding: 8px 16px !important;
+  min-height: 36px !important;
+  background: var(--gold-dark) !important;
+  color: #000 !important;
+  border-color: var(--gold) !important;
+  animation: pulse 1.5s ease-in-out infinite;
+  margin-left: auto;
 }
 
 /* =============================================================

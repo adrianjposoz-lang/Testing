@@ -206,7 +206,7 @@ function onCorrectAnswer() {
         try { audio.playCombo(); } catch(e) {}
         showComboText(`COMBO x${combat.combo}!`, '#ffdd00');
     } else {
-        try { audio.playSlash(); } catch(e) {}
+        try { audio.playSlash(); setTimeout(() => audio.playGoldPickup(), 150); } catch(e) {}
     }
 
     // Deal damage to boss
@@ -246,19 +246,40 @@ function onWrongAnswer(q) {
     updateHpBars();
     hideComboCounter();
 
-    // Show explanation
+    // Show explanation with CONTINUE button - let player read at their own pace
     combat.showingExplanation = true;
-    document.getElementById('explanation-text').textContent = q.explanation;
-    document.getElementById('explanation-box').classList.remove('hidden');
+    const explBox = document.getElementById('explanation-box');
+    const explText = document.getElementById('explanation-text');
+    explText.textContent = q.explanation;
+    explBox.classList.remove('hidden');
+
+    // Add continue button
+    let continueBtn = document.getElementById('btn-explanation-continue');
+    if (!continueBtn) {
+        continueBtn = document.createElement('button');
+        continueBtn.id = 'btn-explanation-continue';
+        continueBtn.className = 'pixel-btn explanation-continue';
+        continueBtn.textContent = 'CONTINUE';
+        explBox.appendChild(continueBtn);
+    } else {
+        continueBtn.style.display = 'block';
+    }
 
     // Check player death
     if (combat.playerHp <= 0) {
-        setTimeout(() => onPlayerDeath(), 1500);
+        continueBtn.textContent = 'CONTINUE';
+        continueBtn.onclick = () => {
+            explBox.classList.add('hidden');
+            continueBtn.style.display = 'none';
+            onPlayerDeath();
+        };
     } else {
-        setTimeout(() => {
-            document.getElementById('explanation-box').classList.add('hidden');
+        continueBtn.onclick = () => {
+            explBox.classList.add('hidden');
+            continueBtn.style.display = 'none';
+            try { audio.playMenuSelect(); } catch(e) {}
             nextQuestion();
-        }, 2500);
+        };
     }
 }
 
