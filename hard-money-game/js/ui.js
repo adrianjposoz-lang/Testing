@@ -850,11 +850,11 @@ function handleEventChoice(selectedBtn, isCorrect, event, container) {
         state.xp += event.reward.xp;
         state.totalXp += event.reward.xp;
         resultDiv.innerHTML = `✓ CORRECT! +${event.reward.gold} Gold, +${event.reward.xp} XP<br><br>${event.explanation}`;
-        try { audio.playCorrect && audio.playCorrect(); } catch(e) {}
+        try { audio.playGoldPickup(); } catch(e) {}
     } else {
         resultDiv.className = 'event-result failure';
         resultDiv.innerHTML = `✗ WRONG<br><br>${event.explanation}`;
-        try { audio.playWrong && audio.playWrong(); } catch(e) {}
+        try { audio.playHit(); } catch(e) {}
     }
 
     saveGame();
@@ -1981,6 +1981,11 @@ let dealAnswered = false;
 function openDealSimulator() {
     try { audio.playMenuSelect(); } catch(e) {}
     showScreen('deals');
+    currentDeal = null;
+    dealQuestionIndex = 0;
+    dealScore = 0;
+    dealTotal = 0;
+    dealAnswered = false;
     const list = document.getElementById('deals-list');
     const active = document.getElementById('deal-active');
     const summary = document.getElementById('deal-summary');
@@ -2103,7 +2108,7 @@ function onDealAnswer(index) {
     feedback.style.color = isCorrect ? 'var(--green)' : 'var(--red)';
     feedback.textContent = (isCorrect ? '✓ CORRECT! ' : '✗ WRONG. ') + q.explanation;
 
-    try { isCorrect ? audio.playCorrect() : audio.playWrong(); } catch(e) {}
+    try { isCorrect ? audio.playGoldPickup() : audio.playHit(); } catch(e) {}
 
     document.getElementById('btn-deal-next').classList.remove('hidden');
 }
@@ -2138,11 +2143,13 @@ function completeDeal() {
 
     summary.innerHTML = `
         <h2 class="screen-title" style="font-size:14px; margin-bottom:12px;">${passed ? 'DEAL COMPLETE!' : 'NEEDS REVIEW'}</h2>
-        <div style="font-size:24px; color:${passed ? 'var(--green)' : 'var(--red)}; margin-bottom:8px;">${dealScore}/${dealTotal}</div>
+        <div style="font-size:24px; color:${passed ? 'var(--green)' : 'var(--red)'}; margin-bottom:8px;">${dealScore}/${dealTotal}</div>
         <div style="font-size:10px; color:var(--gray); margin-bottom:12px;">${pct}% Accuracy</div>
         ${goldReward > 0 ? `<div style="color:var(--gold); margin-bottom:4px;">+${goldReward} Gold</div>` : ''}
         <div style="color:var(--blue); margin-bottom:12px;">+${xpReward} XP</div>
         <div style="font-size:9px; color:var(--white); line-height:1.8; margin-bottom:16px;">${currentDeal.summary}</div>
-        <button class="pixel-btn" onclick="document.getElementById('deal-summary').classList.add('hidden'); document.getElementById('deals-list').classList.remove('hidden');">BACK TO DEALS</button>
+        <button class="pixel-btn" id="btn-deal-back">BACK TO DEALS</button>
     `;
+
+    document.getElementById('btn-deal-back').addEventListener('click', openDealSimulator);
 }

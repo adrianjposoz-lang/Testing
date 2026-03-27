@@ -70,11 +70,11 @@ export const MAP_EVENTS = [
         title: 'The 70% Rule',
         scenario: 'A borrower finds a distressed property with an ARV (After Repair Value) of $300,000. Repairs will cost $60,000. They want to buy it for $200,000 and need a $160,000 loan.',
         choices: [
-            { text: 'Approve — the purchase price is below the 70% rule threshold', correct: true },
+            { text: 'Approve — the purchase price is below the 70% rule threshold', correct: false },
             { text: 'Decline — the deal doesn\'t meet the 70% rule', correct: false },
-            { text: 'Approve only if they reduce the purchase price to $150,000', correct: false }
+            { text: 'Counter-offer at $150,000 to meet the 70% rule', correct: true }
         ],
-        explanation: '70% Rule: Max Purchase = (ARV × 0.70) - Repairs = ($300K × 0.70) - $60K = $150K. Purchase at $200K exceeds… wait — actually $200K < $210K. The 70% of ARV is $210K, minus $60K repairs = $150K max offer. But the loan of $160K on a $200K purchase is 80% LTV on purchase. However the deal math works: purchase $200K is under 70% of ARV ($210K). This is approvable.',
+        explanation: '70% Rule: Max Purchase = (ARV × 0.70) - Repairs = ($300K × 0.70) - $60K = $210K - $60K = $150K. The $200K purchase price exceeds the $150K max. The smart move is to counter-offer at $150K, which meets the rule and still gives the borrower a viable deal.',
         reward: { gold: 40, xp: 30 },
         minStage: 3
     },
