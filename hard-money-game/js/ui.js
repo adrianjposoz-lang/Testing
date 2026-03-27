@@ -450,7 +450,7 @@ function drawCutsceneScene(ctx, scene, w, h) {
                 }
             }
             // Pillars with detail
-            ctx.fillStyle = '#5555775';
+            ctx.fillStyle = '#555577';
             for (const px of [80, 180, 580, 680]) {
                 ctx.fillStyle = '#555577';
                 ctx.fillRect(px, 30, 40, h * 0.65);

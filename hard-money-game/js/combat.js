@@ -35,7 +35,8 @@ export function startFight(stageNum) {
     combat.shieldsRemaining = state.inventory.shield_block > 0 ? 1 : 0;
     combat.bonusTime = state.inventory.potion_time > 0 ? 5 : 0;
     // Gold multiplier: gold charm + golden sword bonus
-    let goldMult = state.inventory.gold_charm > 0 ? 1.25 : 1;
+    const usedGoldCharm = state.inventory.gold_charm > 0;
+    let goldMult = usedGoldCharm ? 1.25 : 1;
     if (state.equipment.sword === 'golden') goldMult += 0.1;
     // Golden set bonus: all 3 golden items = +25% gold extra
     const goldenPieces = [state.equipment.sword === 'golden', state.equipment.armor === 'golden', state.equipment.helmet === 'gold'].filter(Boolean).length;
@@ -75,7 +76,7 @@ export function startFight(stageNum) {
     // Consume consumables used
     if (combat.shieldsRemaining > 0) state.inventory.shield_block--;
     if (combat.bonusTime > 0) state.inventory.potion_time--;
-    if (combat.goldMultiplier > 1) state.inventory.gold_charm--;
+    if (usedGoldCharm) state.inventory.gold_charm--;
 
     // Update HUD
     const bossNameEl = document.getElementById('boss-name');

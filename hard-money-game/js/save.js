@@ -13,6 +13,7 @@ export const SaveSystem = {
                 ownedItems: gameState.ownedItems,
                 inventory: gameState.inventory,
                 codexUnlocked: gameState.codexUnlocked,
+                codexViewed: gameState.codexViewed,
                 totalKills: gameState.totalKills,
                 totalCorrect: gameState.totalCorrect,
                 totalAnswered: gameState.totalAnswered,
