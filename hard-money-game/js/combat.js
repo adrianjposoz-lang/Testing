@@ -1,5 +1,5 @@
 // Combat System - fights, timer, questions, hints, damage
-import { QUESTIONS } from './questions.js';
+import { QUESTIONS, STAGE_TOPICS } from './questions.js';
 import { BOSS_DATA } from './cutscenes.js';
 import { audio } from './audio.js';
 import { state, combat, showScreen, saveGame, getFrame, anim } from './engine.js';
@@ -29,12 +29,30 @@ export function startFight(stageNum) {
     // Gold multiplier: gold charm + golden sword bonus
     let goldMult = state.inventory.gold_charm > 0 ? 1.25 : 1;
     if (state.equipment.sword === 'golden') goldMult += 0.1;
+    // Golden set bonus: all 3 golden items = +25% gold extra
+    const goldenPieces = [state.equipment.sword === 'golden', state.equipment.armor === 'golden', state.equipment.helmet === 'gold'].filter(Boolean).length;
+    if (goldenPieces >= 3) goldMult += 0.25;
     combat.goldMultiplier = goldMult;
     combat.isAnswering = false;
     combat.showingExplanation = false;
     combat.eliminatedIndex = -1;
     combat.questionIndex = 0;
     combat.wrongAnswers = 0;
+    combat.answerTimes = [];
+    combat._rageShown = false;
+
+    // Apply difficulty settings
+    const diff = state.settings.difficulty || 'normal';
+    if (diff === 'easy') {
+        combat.timerMax = 20;
+        combat.baseDamageMultiplier = 1;
+    } else if (diff === 'hard') {
+        combat.timerMax = 10;
+        combat.baseDamageMultiplier = 2;
+    } else {
+        combat.timerMax = 15;
+        combat.baseDamageMultiplier = 1;
+    }
 
     // Check rubber banding - died twice on this boss = extra hint
     const deaths = state.deathsPerStage[stageNum] || 0;
@@ -87,7 +105,18 @@ export function nextQuestion() {
     combat.showingExplanation = false;
     combat.eliminatedIndex = -1;
 
-    // Display question
+    // Boss rage warning
+    const bossHpPct = combat.bossHp / combat.bossMaxHp;
+    if (bossHpPct < 0.3 && !combat._rageShown) {
+        combat._rageShown = true;
+        showComboText('BOSS ENRAGED!', '#ff2200');
+    }
+
+    // Display question with topic hint
+    const topicLabel = document.getElementById('question-topic');
+    if (topicLabel) {
+        topicLabel.textContent = STAGE_TOPICS[combat.bossStage] || '';
+    }
     document.getElementById('question-text').textContent = q.question;
     document.getElementById('explanation-box').classList.add('hidden');
 
@@ -104,12 +133,16 @@ export function nextQuestion() {
     });
 
     // Start timer
+    combat.questionStartTime = Date.now();
     startTimer();
 }
 
 // ── Timer ──
 function startTimer() {
-    combat.timerValue = combat.timerMax + combat.bonusTime;
+    // Boss rage: timer shortens when boss HP is below 30%
+    const bossHpPercent = combat.bossHp / combat.bossMaxHp;
+    const rageReduction = bossHpPercent < 0.3 ? 3 : 0;
+    combat.timerValue = Math.max(5, combat.timerMax + combat.bonusTime - rageReduction);
     const timerFill = document.getElementById('timer-fill');
     const timerText = document.getElementById('timer-text');
     const totalTime = combat.timerValue;
@@ -193,6 +226,8 @@ function timeOut() {
 
 // ── Correct Answer ──
 function onCorrectAnswer() {
+    const answerTime = (Date.now() - (combat.questionStartTime || Date.now())) / 1000;
+    combat.answerTimes.push(answerTime);
     state.totalCorrect++;
     combat.combo++;
     if (combat.combo > combat.maxCombo) combat.maxCombo = combat.combo;
@@ -266,7 +301,8 @@ function onWrongAnswer(q) {
         showComboText('SHIELD BLOCKED!', '#4488ff');
         try { audio.playMenuSelect(); } catch(e) {}
     } else {
-        const bossDmg = BOSS_DATA[combat.bossStage].baseDamage || 1;
+        const rawDmg = BOSS_DATA[combat.bossStage].baseDamage || 1;
+        const bossDmg = rawDmg * (combat.baseDamageMultiplier || 1);
         combat.playerHp = Math.max(0, combat.playerHp - bossDmg);
         try { audio.playHit(); } catch(e) {}
         // Trigger boss attack animation - boss lunges, player flashes
@@ -343,6 +379,9 @@ function onBossDefeated() {
             state.titles.push('The Flawless');
         }
     }
+
+    // Check achievements
+    checkAchievements();
 
     // Mark stage complete
     if (!state.endlessMode) {
@@ -452,7 +491,10 @@ export function useHealthPotion() {
 function updateHpBars() {
     const bossPercent = (combat.bossHp / combat.bossMaxHp) * 100;
     const playerPercent = (combat.playerHp / combat.playerMaxHp) * 100;
-    document.getElementById('boss-hp-fill').style.width = bossPercent + '%';
+    const bossFill = document.getElementById('boss-hp-fill');
+    bossFill.style.width = bossPercent + '%';
+    // Boss rage visual
+    bossFill.classList.toggle('enraged', bossPercent < 30);
     document.getElementById('player-hp-fill').style.width = playerPercent + '%';
     document.getElementById('hp-text').textContent = `${combat.playerHp}/${combat.playerMaxHp}`;
 }
@@ -576,6 +618,39 @@ export function spawnBossParticles() {
         container.appendChild(particle);
         setTimeout(() => particle.remove(), 800);
     }
+}
+
+// ── Achievement System ──
+function checkAchievements() {
+    const t = state.titles;
+    const add = (title) => { if (!t.includes(title)) t.push(title); };
+
+    // Speed Demon — answered any question in under 3 seconds
+    if (combat.answerTimes.some(t => t < 3)) add('Speed Demon');
+    // Lightning Reflexes — answered any question in under 1.5 seconds
+    if (combat.answerTimes.some(t => t < 1.5)) add('Lightning Reflexes');
+    // Moneybags — accumulated 500+ gold total
+    if (state.gold >= 500) add('Moneybags');
+    // Wealthy — accumulated 1000+ gold total
+    if (state.gold >= 1000) add('The Wealthy');
+    // Scholar — unlocked full codex
+    if (state.codexUnlocked.size >= 10) add('The Scholar');
+    // Survivor — won a fight with exactly 1 HP
+    if (combat.playerHp === 1) add('The Survivor');
+    // Dragon Slayer — beat stage 10
+    if (state.completedStages.has(10)) add('Dragon Slayer');
+    // Shopaholic — own 8+ items
+    if (state.ownedItems.size >= 8) add('Shopaholic');
+    // Persistent — died 5+ times total
+    const totalDeaths = Object.values(state.deathsPerStage).reduce((a, b) => a + b, 0);
+    if (totalDeaths >= 5) add('The Persistent');
+    // Golden Set — equip all golden gear
+    const goldenSet = state.equipment.sword === 'golden' && state.equipment.armor === 'golden' && state.equipment.helmet === 'gold';
+    if (goldenSet) add('Golden Knight');
+    // Combo Master — 7+ combo in a single fight
+    if (combat.maxCombo >= 7) add('Combo Master');
+    // Endless Warrior — reach round 5 in endless mode
+    if (state.endlessRound >= 5) add('Endless Warrior');
 }
 
 // ── Utilities ──

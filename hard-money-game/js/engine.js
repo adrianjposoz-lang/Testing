@@ -25,7 +25,7 @@ export const state = {
     endlessHighScore: 0,
     titles: [],
     deathsPerStage: {},
-    settings: { masterVolume: 0.7, musicVolume: 0.5, sfxVolume: 0.8, skipCutscenes: false },
+    settings: { masterVolume: 0.7, musicVolume: 0.5, sfxVolume: 0.8, skipCutscenes: false, difficulty: 'normal' },
     endlessMode: false,
     endlessRound: 0
 };
@@ -43,6 +43,7 @@ export const combat = {
     goldEarned: 0,
     timerValue: 15,
     timerMax: 15,
+    baseDamageMultiplier: 1,
     timerInterval: null,
     hintsRemaining: 1,
     shieldsRemaining: 0,
@@ -910,6 +911,9 @@ export function showScreen(screenName) {
             break;
         case 'leaderboard':
             document.getElementById('leaderboard-screen').classList.remove('hidden');
+            break;
+        case 'stats':
+            document.getElementById('stats-screen').classList.remove('hidden');
             break;
     }
 }

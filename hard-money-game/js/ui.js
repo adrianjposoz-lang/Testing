@@ -78,6 +78,10 @@ function wireEvents() {
     // Codex
     document.getElementById('btn-close-codex').addEventListener('click', () => showScreen('map'));
 
+    // Stats
+    document.getElementById('btn-stats').addEventListener('click', openStats);
+    document.getElementById('btn-close-stats').addEventListener('click', () => { try { audio.playMenuSelect(); } catch(e) {} showScreen('map'); });
+
     // Leaderboard
     document.getElementById('btn-leaderboard').addEventListener('click', () => openLeaderboard('map'));
     document.getElementById('btn-close-leaderboard').addEventListener('click', closeLeaderboard);
@@ -99,6 +103,9 @@ function wireEvents() {
     });
     document.getElementById('skip-cutscenes').addEventListener('change', e => {
         state.settings.skipCutscenes = e.target.checked;
+    });
+    document.getElementById('difficulty-select').addEventListener('change', e => {
+        state.settings.difficulty = e.target.value;
     });
 
     // Complete screen
@@ -1087,6 +1094,7 @@ function applySettings() {
     document.getElementById('music-volume').value = state.settings.musicVolume * 100;
     document.getElementById('sfx-volume').value = state.settings.sfxVolume * 100;
     document.getElementById('skip-cutscenes').checked = state.settings.skipCutscenes;
+    document.getElementById('difficulty-select').value = state.settings.difficulty || 'normal';
     try {
         audio.setMasterVolume(state.settings.masterVolume);
         audio.setMusicVolume(state.settings.musicVolume);
@@ -1173,6 +1181,66 @@ function executeReset() {
     document.getElementById('btn-start').textContent = 'PRESS START';
     showScreen('title');
     try { audio.stopMusic(); } catch(e) {}
+}
+
+// ── Stats & Achievements ──
+const ALL_ACHIEVEMENTS = [
+    { id: 'The Flawless', icon: '💎', desc: 'Beat a boss with no wrong answers' },
+    { id: 'The Unstoppable', icon: '🔥', desc: 'Reach a 10x combo streak' },
+    { id: 'Speed Demon', icon: '⚡', desc: 'Answer a question in under 3 seconds' },
+    { id: 'Lightning Reflexes', icon: '🌩️', desc: 'Answer a question in under 1.5 seconds' },
+    { id: 'Moneybags', icon: '💰', desc: 'Accumulate 500 gold' },
+    { id: 'The Wealthy', icon: '👑', desc: 'Accumulate 1000 gold' },
+    { id: 'The Scholar', icon: '📖', desc: 'Unlock all 10 codex entries' },
+    { id: 'The Survivor', icon: '💀', desc: 'Win a fight with only 1 HP' },
+    { id: 'Dragon Slayer', icon: '🐉', desc: 'Defeat the ARV Dragon' },
+    { id: 'Shopaholic', icon: '🛒', desc: 'Own 8 or more items' },
+    { id: 'The Persistent', icon: '🛡️', desc: 'Die 5 times and keep going' },
+    { id: 'Golden Knight', icon: '✨', desc: 'Equip full golden gear set' },
+    { id: 'Combo Master', icon: '🎯', desc: 'Reach 7x combo in a single fight' },
+    { id: 'Endless Warrior', icon: '♾️', desc: 'Reach round 5 in endless mode' },
+];
+
+function openStats() {
+    try { audio.playMenuSelect(); } catch(e) {}
+    const content = document.getElementById('stats-content');
+    const accuracy = Math.round(state.totalCorrect / Math.max(1, state.totalAnswered) * 100);
+    const totalDeaths = Object.values(state.deathsPerStage).reduce((a, b) => a + b, 0);
+    const stagesCleared = state.completedStages.size;
+
+    content.innerHTML = `
+        <div class="stats-grid">
+            <div class="stat-box"><div class="stat-label">Accuracy</div><div class="stat-val">${accuracy}%</div></div>
+            <div class="stat-box"><div class="stat-label">Best Combo</div><div class="stat-val">${state.bestCombo}x</div></div>
+            <div class="stat-box"><div class="stat-label">Bosses Slain</div><div class="stat-val">${state.totalKills}</div></div>
+            <div class="stat-box"><div class="stat-label">Total Gold</div><div class="stat-val">${state.gold}</div></div>
+            <div class="stat-box"><div class="stat-label">Stages Cleared</div><div class="stat-val">${stagesCleared}/10</div></div>
+            <div class="stat-box"><div class="stat-label">Total Deaths</div><div class="stat-val">${totalDeaths}</div></div>
+            <div class="stat-box"><div class="stat-label">Questions Answered</div><div class="stat-val">${state.totalAnswered}</div></div>
+            <div class="stat-box"><div class="stat-label">Endless High</div><div class="stat-val">Rd ${state.endlessHighScore}</div></div>
+            <div class="stat-box"><div class="stat-label">Difficulty</div><div class="stat-val">${(state.settings.difficulty || 'normal').toUpperCase()}</div></div>
+            <div class="stat-box"><div class="stat-label">Titles Earned</div><div class="stat-val">${state.titles.length}/${ALL_ACHIEVEMENTS.length}</div></div>
+        </div>
+    `;
+
+    // Achievements
+    const grid = document.getElementById('achievements-grid');
+    grid.innerHTML = '';
+    ALL_ACHIEVEMENTS.forEach(ach => {
+        const unlocked = state.titles.includes(ach.id);
+        const el = document.createElement('div');
+        el.className = `achievement-card${unlocked ? ' unlocked' : ''}`;
+        el.innerHTML = `
+            <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+            <div class="ach-info">
+                <div class="ach-name">${unlocked ? ach.id : '???'}</div>
+                <div class="ach-desc">${ach.desc}</div>
+            </div>
+        `;
+        grid.appendChild(el);
+    });
+
+    showScreen('stats');
 }
 
 // ── Leaderboard ──

@@ -1405,3 +1405,973 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 .leaderboard-table tr:hover td {
   background: rgba(255,255,255,0.05);
 }
+
+/* =============================================================
+   RESPONSIVE — TABLET (481px – 768px)
+   ============================================================= */
+@media (max-width: 768px) {
+  /* --- Global font scale --- */
+  html, body {
+    font-size: 11px;
+  }
+
+  /* --- Game container --- */
+  #game-container {
+    max-width: 100%;
+    border-width: 2px;
+  }
+
+  /* --- Overlays: tighter padding, scrollable --- */
+  .overlay {
+    padding: 14px;
+  }
+
+  /* --- Title screen --- */
+  .game-title {
+    font-size: clamp(14px, 3.5vw, 24px);
+    letter-spacing: 1px;
+  }
+
+  .title-subtitle {
+    font-size: clamp(7px, 1.5vw, 10px);
+  }
+
+  .title-content {
+    gap: 14px;
+  }
+
+  /* --- Buttons --- */
+  .pixel-btn {
+    font-size: clamp(9px, 1.8vw, 12px);
+    padding: 10px 18px;
+    min-height: 44px;
+  }
+
+  .pixel-btn.small {
+    font-size: 8px;
+    padding: 6px 10px;
+    min-height: 36px;
+  }
+
+  /* --- Screen titles --- */
+  .screen-title {
+    font-size: clamp(12px, 2.5vw, 18px);
+  }
+
+  /* --- Map footer --- */
+  .map-footer {
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .gold-display {
+    font-size: 10px;
+  }
+
+  /* --- Combat HUD --- */
+  .boss-hp-bar {
+    width: 220px;
+    height: 14px;
+  }
+
+  .hp-bar {
+    width: 130px;
+    height: 14px;
+  }
+
+  .timer-bar {
+    width: 120px;
+    height: 12px;
+  }
+
+  .timer-text {
+    font-size: 10px;
+  }
+
+  .gold-counter {
+    font-size: 10px;
+  }
+
+  .boss-name {
+    font-size: 9px;
+  }
+
+  .stage-indicator {
+    font-size: 9px;
+  }
+
+  .combo-counter {
+    font-size: 15px;
+  }
+
+  .hud-bottom-left {
+    bottom: 120px;
+    left: 8px;
+  }
+
+  .timer-container {
+    bottom: 110px;
+    right: 8px;
+  }
+
+  /* --- Question panel --- */
+  .question-panel {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .question-text {
+    font-size: clamp(8px, 1.4vw, 11px);
+  }
+
+  .answer-btn {
+    font-size: clamp(7px, 1.2vw, 10px);
+    padding: 8px 10px;
+    min-width: 100px;
+    min-height: 44px;
+  }
+
+  .explanation {
+    font-size: 9px;
+    padding: 10px 12px;
+  }
+
+  /* --- Shop --- */
+  .shop-overlay {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .shop-layout {
+    gap: 10px;
+  }
+
+  .character-preview {
+    min-width: 160px;
+  }
+
+  .shop-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+
+  .shop-item {
+    padding: 8px;
+  }
+
+  .shop-tab {
+    font-size: 7px;
+    padding: 5px 8px;
+  }
+
+  .shopkeeper-quote {
+    font-size: 8px;
+  }
+
+  .purchase-confirm-box {
+    padding: 18px;
+    max-width: 280px;
+  }
+
+  .confirm-title {
+    font-size: 12px;
+  }
+
+  .confirm-item {
+    font-size: 10px;
+  }
+
+  .confirm-price {
+    font-size: 12px;
+  }
+
+  /* --- Codex --- */
+  .codex-overlay {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .codex-entry {
+    padding: 10px;
+  }
+
+  .codex-entry h3 {
+    font-size: 9px;
+  }
+
+  .codex-entry p {
+    font-size: 8px;
+  }
+
+  /* --- Tutorial --- */
+  .tutorial-content {
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  .tutorial-section h3 {
+    font-size: 9px;
+  }
+
+  .tutorial-section p {
+    font-size: 8px;
+  }
+
+  /* --- Cutscene --- */
+  .cutscene-box {
+    padding: 14px;
+    min-height: 120px;
+  }
+
+  .cutscene-speaker {
+    font-size: 10px;
+  }
+
+  .cutscene-text {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  /* --- Settings --- */
+  .settings-content {
+    max-width: 100%;
+  }
+
+  .setting-row label {
+    font-size: 9px;
+    min-width: 110px;
+  }
+
+  /* --- Victory / Death --- */
+  .victory-title,
+  .death-title {
+    font-size: clamp(16px, 3.5vw, 24px);
+  }
+
+  .gold-earned {
+    font-size: 15px;
+  }
+
+  .battle-stats {
+    font-size: 9px;
+  }
+
+  .death-message {
+    font-size: 10px;
+  }
+
+  /* --- Leaderboard --- */
+  .leaderboard-content {
+    max-height: 340px;
+  }
+
+  .leaderboard-table {
+    font-size: 7px;
+  }
+
+  .leaderboard-table th {
+    font-size: 6px;
+    padding: 6px 4px;
+  }
+
+  .leaderboard-table td {
+    padding: 5px 4px;
+  }
+
+  /* --- Boss taunt --- */
+  .boss-taunt {
+    max-width: 80%;
+    font-size: 8px;
+    padding: 6px 12px;
+  }
+
+  /* --- Pixel input --- */
+  .pixel-input {
+    font-size: 12px;
+    width: 220px;
+  }
+}
+
+/* =============================================================
+   RESPONSIVE — PHONE (320px – 480px)
+   ============================================================= */
+@media (max-width: 480px) {
+  /* --- Global font scale --- */
+  html, body {
+    font-size: 10px;
+    overflow-y: auto;
+  }
+
+  /* --- Game container: full width, no border on tiny screens --- */
+  #game-container {
+    max-width: 100%;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* --- Overlays --- */
+  .overlay {
+    padding: 10px 8px;
+    overflow-y: auto;
+  }
+
+  /* --- Title screen --- */
+  .game-title {
+    font-size: clamp(11px, 4vw, 16px);
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+  }
+
+  .title-subtitle {
+    font-size: 7px;
+  }
+
+  .title-content {
+    gap: 12px;
+  }
+
+  /* --- Buttons: enforce 44px touch targets --- */
+  .pixel-btn {
+    font-size: clamp(8px, 2.5vw, 10px);
+    padding: 10px 14px;
+    min-height: 44px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .pixel-btn.small {
+    font-size: 7px;
+    padding: 6px 8px;
+    min-height: 44px;
+    width: auto;
+    max-width: none;
+  }
+
+  /* --- Screen titles --- */
+  .screen-title {
+    font-size: clamp(10px, 3vw, 14px);
+    margin-bottom: 6px;
+  }
+
+  /* --- Map footer: compact layout --- */
+  .map-footer {
+    gap: 6px;
+    padding: 5px 6px;
+    font-size: 8px;
+    justify-content: space-around;
+  }
+
+  .map-footer .pixel-btn {
+    font-size: 7px;
+    padding: 6px 8px;
+    min-height: 44px;
+    width: auto;
+    max-width: none;
+  }
+
+  .gold-display {
+    font-size: 9px;
+  }
+
+  .map-overlay .screen-title {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+
+  /* --- Combat HUD: compact everything --- */
+  .hud {
+    padding: 4px 6px;
+  }
+
+  .boss-hp-bar {
+    width: 140px;
+    height: 12px;
+  }
+
+  .boss-name {
+    font-size: 8px;
+  }
+
+  .stage-indicator {
+    font-size: 8px;
+  }
+
+  .hp-bar {
+    width: 100px;
+    height: 12px;
+  }
+
+  .hp-text {
+    font-size: 7px;
+  }
+
+  .player-name-display {
+    font-size: 7px;
+  }
+
+  .timer-bar {
+    width: 80px;
+    height: 10px;
+  }
+
+  .timer-text {
+    font-size: 9px;
+  }
+
+  .timer-container {
+    bottom: 100px;
+    right: 6px;
+    gap: 4px;
+  }
+
+  .hud-bottom-left {
+    bottom: 100px;
+    left: 6px;
+  }
+
+  .gold-counter {
+    font-size: 9px;
+    top: 28px;
+    right: 6px;
+  }
+
+  .combo-counter {
+    font-size: 14px;
+  }
+
+  /* --- Question panel: stacked answers --- */
+  .question-panel {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .question-text {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+
+  .answers-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .answer-btn {
+    width: 100%;
+    max-width: 100%;
+    min-width: unset;
+    min-height: 44px;
+    font-size: 8px;
+    padding: 10px 8px;
+    text-align: left;
+  }
+
+  .hint-btn {
+    font-size: 8px;
+    padding: 8px 12px;
+    min-height: 44px;
+  }
+
+  .flee-btn {
+    font-size: 8px !important;
+    padding: 8px 10px !important;
+    min-height: 44px;
+  }
+
+  .explanation {
+    font-size: 8px;
+    padding: 8px 10px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .explanation-continue {
+    font-size: 8px !important;
+    min-height: 44px !important;
+    width: 100%;
+  }
+
+  /* --- Shop: stacked layout, smaller grid --- */
+  .shop-overlay {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .shop-layout {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .character-preview {
+    min-width: unset;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    padding: 6px;
+  }
+
+  .character-preview canvas {
+    width: 64px;
+    height: 64px;
+  }
+
+  .equipped-label {
+    font-size: 7px;
+  }
+
+  .shop-tabs {
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+
+  .shop-tab {
+    font-size: 6px;
+    padding: 5px 6px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .shop-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 4px;
+  }
+
+  .shop-item {
+    padding: 6px;
+  }
+
+  .item-name {
+    font-size: 8px;
+  }
+
+  .item-desc {
+    font-size: 6px;
+  }
+
+  .item-price {
+    font-size: 8px;
+  }
+
+  .shop-footer {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .shopkeeper-quote {
+    font-size: 7px;
+  }
+
+  .purchase-confirm-box {
+    padding: 14px 10px;
+    max-width: 90vw;
+  }
+
+  .confirm-title {
+    font-size: 10px;
+    margin-bottom: 10px;
+  }
+
+  .confirm-item {
+    font-size: 9px;
+  }
+
+  .confirm-price {
+    font-size: 10px;
+  }
+
+  .confirm-desc {
+    font-size: 7px;
+    margin-bottom: 14px;
+  }
+
+  .confirm-buttons {
+    gap: 8px;
+  }
+
+  .confirm-buttons .pixel-btn {
+    width: auto;
+    max-width: none;
+  }
+
+  /* --- Codex --- */
+  .codex-overlay {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .codex-count {
+    font-size: 8px;
+  }
+
+  .codex-entry {
+    padding: 8px;
+    margin-bottom: 6px;
+  }
+
+  .codex-entry h3 {
+    font-size: 8px;
+    margin-bottom: 4px;
+  }
+
+  .codex-entry p {
+    font-size: 7px;
+    line-height: 1.5;
+  }
+
+  /* --- Tutorial: single column --- */
+  .tutorial-overlay {
+    padding: 10px;
+  }
+
+  .tutorial-content {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .tutorial-section {
+    padding: 10px;
+  }
+
+  .tutorial-section h3 {
+    font-size: 8px;
+  }
+
+  .tutorial-section p {
+    font-size: 7px;
+  }
+
+  /* --- Cutscene --- */
+  .cutscene-overlay canvas {
+    max-height: 50%;
+  }
+
+  .cutscene-box {
+    padding: 10px;
+    min-height: 100px;
+  }
+
+  .cutscene-speaker {
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
+
+  .cutscene-text {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .cutscene-prompt {
+    font-size: 7px;
+    margin-top: 8px;
+  }
+
+  .cutscene-skip {
+    font-size: 7px;
+    padding: 6px 8px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* --- Settings: full-width sliders --- */
+  .settings-content {
+    max-width: 100%;
+    gap: 12px;
+  }
+
+  .setting-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .setting-row label {
+    font-size: 8px;
+    min-width: unset;
+    text-align: center;
+  }
+
+  .setting-row input[type="range"] {
+    width: 100%;
+  }
+
+  .setting-row input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    align-self: center;
+  }
+
+  /* --- Victory / Death --- */
+  .victory-screen,
+  .death-screen {
+    gap: 10px;
+    padding: 12px 8px;
+  }
+
+  .victory-title,
+  .death-title {
+    font-size: clamp(14px, 4vw, 20px);
+  }
+
+  .gold-earned {
+    font-size: 14px;
+  }
+
+  .fragment-recovered {
+    font-size: 9px;
+  }
+
+  .battle-stats {
+    font-size: 8px;
+    line-height: 1.6;
+  }
+
+  .death-message {
+    font-size: 9px;
+  }
+
+  .death-subtitle {
+    font-size: 8px;
+  }
+
+  .victory-content {
+    gap: 8px;
+  }
+
+  .share-card {
+    padding: 10px;
+    max-width: 100%;
+    font-size: 8px;
+  }
+
+  .victory-stats {
+    font-size: 8px;
+  }
+
+  /* --- Leaderboard --- */
+  .leaderboard-overlay {
+    padding: 10px;
+  }
+
+  .leaderboard-content {
+    max-height: 280px;
+    margin: 10px 0;
+  }
+
+  .leaderboard-table {
+    font-size: 6px;
+  }
+
+  .leaderboard-table th {
+    font-size: 5px;
+    padding: 4px 3px;
+  }
+
+  .leaderboard-table td {
+    padding: 4px 3px;
+  }
+
+  /* --- Name input --- */
+  .name-content {
+    gap: 16px;
+  }
+
+  .pixel-input {
+    font-size: 11px;
+    width: 90%;
+    max-width: 240px;
+    padding: 10px 12px;
+  }
+
+  /* --- Boss taunt --- */
+  .boss-taunt {
+    max-width: 90%;
+    font-size: 7px;
+    padding: 5px 10px;
+    top: 70px;
+  }
+
+  /* --- Damage numbers --- */
+  .damage-number {
+    font-size: 12px;
+  }
+
+  .damage-number.critical {
+    font-size: 18px;
+  }
+
+  .hp-bar-damage {
+    font-size: 11px;
+  }
+
+  .hp-bar-damage.critical {
+    font-size: 14px;
+  }
+
+  /* --- Mute button --- */
+  .mute-btn {
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+    min-height: 44px;
+  }
+}
+
+/* =============================================================
+   QUESTION TOPIC HINT
+   ============================================================= */
+.question-topic {
+  font-size: 7px;
+  color: var(--gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+
+/* =============================================================
+   DIFFICULTY SELECTOR
+   ============================================================= */
+.pixel-select {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  background: var(--bg-dark);
+  color: var(--white);
+  border: 2px solid var(--gold-dark);
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+}
+.pixel-select:focus {
+  border-color: var(--gold);
+}
+
+/* =============================================================
+   STATS SCREEN
+   ============================================================= */
+.stats-overlay {
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 500px;
+  margin: 10px auto;
+}
+
+.stat-box {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 6px;
+  color: var(--gray);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.stat-val {
+  font-size: 11px;
+  color: var(--gold);
+}
+
+.achievements-title {
+  font-size: 10px;
+  color: var(--gold);
+  margin: 12px 0 8px;
+  text-align: center;
+}
+
+.achievements-section {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 6px 8px;
+  opacity: 0.4;
+}
+
+.achievement-card.unlocked {
+  opacity: 1;
+  border-color: var(--gold-dark);
+  background: rgba(245,200,66,0.05);
+}
+
+.ach-icon {
+  font-size: 16px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.ach-info {
+  text-align: left;
+}
+
+.ach-name {
+  font-size: 7px;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+
+.achievement-card.unlocked .ach-name {
+  color: var(--gold);
+}
+
+.ach-desc {
+  font-size: 6px;
+  color: var(--gray);
+  line-height: 1.4;
+}
+
+/* Boss rage indicator on HP bar */
+.boss-fill.enraged {
+  background: linear-gradient(90deg, #ff2200, #ff6600, #ff2200) !important;
+  animation: rageFlicker 0.3s infinite alternate;
+}
+
+@keyframes rageFlicker {
+  0% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+  }
+  .stat-label { font-size: 5px; }
+  .stat-val { font-size: 9px; }
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+  .achievement-card { padding: 5px 6px; }
+  .ach-icon { font-size: 14px; }
+  .ach-name { font-size: 6px; }
+  .ach-desc { font-size: 5px; }
+  .question-topic { font-size: 6px; }
+}

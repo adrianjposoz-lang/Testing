@@ -84,6 +84,7 @@
                 <span class="gold-display" id="map-gold">Gold: 0</span>
                 <button class="pixel-btn small" id="btn-shop-from-map">SHOP</button>
                 <button class="pixel-btn small" id="btn-codex">CODEX <span id="codex-badge" class="codex-badge hidden">NEW</span></button>
+                <button class="pixel-btn small" id="btn-stats">STATS</button>
                 <button class="pixel-btn small" id="btn-leaderboard">SCORES</button>
                 <button class="pixel-btn small" id="btn-settings">SETTINGS</button>
             </div>
@@ -125,6 +126,7 @@
 
         <!-- Question Panel -->
         <div id="question-panel" class="question-panel hidden">
+            <div class="question-topic" id="question-topic"></div>
             <div class="question-text" id="question-text">Question goes here?</div>
             <div class="answers-container" id="answers-container">
                 <button class="answer-btn" data-index="0">Answer 1</button>
@@ -226,6 +228,17 @@
             <button class="pixel-btn" id="btn-complete-leaderboard">HIGH SCORES</button>
         </div>
 
+        <!-- Stats Screen -->
+        <div id="stats-screen" class="overlay stats-overlay hidden">
+            <h2 class="screen-title">KNIGHT STATS</h2>
+            <div class="stats-content" id="stats-content"></div>
+            <div class="achievements-section">
+                <h3 class="achievements-title">ACHIEVEMENTS</h3>
+                <div class="achievements-grid" id="achievements-grid"></div>
+            </div>
+            <button class="pixel-btn" id="btn-close-stats">CLOSE</button>
+        </div>
+
         <!-- Leaderboard -->
         <div id="leaderboard-screen" class="overlay leaderboard-overlay hidden">
             <h2 class="screen-title">HIGH SCORES</h2>
@@ -252,6 +265,14 @@
                 <div class="setting-row">
                     <label>Skip Cutscenes</label>
                     <input type="checkbox" id="skip-cutscenes">
+                </div>
+                <div class="setting-row">
+                    <label>Difficulty</label>
+                    <select id="difficulty-select" class="pixel-select">
+                        <option value="easy">EASY</option>
+                        <option value="normal" selected>NORMAL</option>
+                        <option value="hard">HARD</option>
+                    </select>
                 </div>
             </div>
             <button class="pixel-btn" id="btn-close-settings">CLOSE</button>
