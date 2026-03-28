@@ -1023,13 +1023,8 @@ function drawShopkeeperPortrait() {
 function leaveShop() {
     try { audio.stopMusic(); audio.playMenuSelect(); audio.playMapMusic(); } catch(e) {}
     stopShopPreview();
-    // Recalculate maxHp based on current equipment + skills
-    const stage = state.currentStage;
-    const bonusHp = (stage >= 8 ? 2 : stage >= 5 ? 1 : 0);
-    const armorHp = (state.equipment.armor === 'plate' || state.equipment.armor === 'golden') ? 1 : 0;
-    const helmetHp = (state.equipment.helmet === 'horned') ? 1 : 0;
-    const skillHp = (hasSkill('iron_will') ? 1 : 0) + (hasSkill('legendary_knight') ? 1 : 0);
-    state.persistentMaxHp = 5 + bonusHp + armorHp + helmetHp + skillHp;
+    // Max HP is always 5
+    state.persistentMaxHp = 5;
     if (state.persistentHp > state.persistentMaxHp) {
         state.persistentHp = state.persistentMaxHp;
     }
@@ -1883,11 +1878,11 @@ const SKILL_TREE = {
     combat: {
         name: 'Combat', color: '#ff4444',
         skills: [
-            { id: 'iron_will', name: 'Iron Will', cost: 50, desc: '+1 max HP permanently', requires: null },
+            { id: 'iron_will', name: 'Iron Will', cost: 50, desc: 'Take 1 less damage per hit (min 1)', requires: null },
             { id: 'battle_hardened', name: 'Battle Hardened', cost: 100, desc: 'First wrong answer deals 0 damage', requires: 'iron_will' },
             { id: 'berserker', name: 'Berserker', cost: 150, desc: '3+ combo deals double boss damage', requires: 'battle_hardened' },
             { id: 'phoenix_heart', name: 'Phoenix Heart', cost: 250, desc: 'Survive death once per fight with 1 HP', requires: 'berserker' },
-            { id: 'legendary_knight', name: 'Legendary Knight', cost: 400, desc: '+1 max HP and +1 shield per fight', requires: 'phoenix_heart' },
+            { id: 'legendary_knight', name: 'Legendary Knight', cost: 400, desc: '+1 shield per fight', requires: 'phoenix_heart' },
         ]
     },
     wealth: {

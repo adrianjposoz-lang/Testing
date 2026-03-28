@@ -12,13 +12,8 @@ export function startFight(stageNum) {
     combat.bossStage = stageNum;
     combat.bossHp = boss.hp;
     combat.bossMaxHp = boss.hp;
-    // Scale max HP: base 5, +1 at stage 5, +1 at stage 8
-    // Equipment bonuses: plate/golden armor = +1 HP, horned helmet = +1 HP
-    const bonusHp = (stageNum >= 8 ? 2 : stageNum >= 5 ? 1 : 0);
-    const armorHp = (state.equipment.armor === 'plate' || state.equipment.armor === 'golden') ? 1 : 0;
-    const helmetHp = (state.equipment.helmet === 'horned') ? 1 : 0;
-    const skillHp = (hasSkill('iron_will') ? 1 : 0) + (hasSkill('legendary_knight') ? 1 : 0);
-    const newMaxHp = 5 + bonusHp + armorHp + helmetHp + skillHp;
+    // Max HP is always 5
+    const newMaxHp = 5;
     combat.playerMaxHp = newMaxHp;
     state.persistentMaxHp = newMaxHp;
     // Persistent HP: carry over from previous fights, capped at new max
@@ -542,7 +537,9 @@ function onWrongAnswer(q, selectedAnswer) {
         try { audio.playMenuSelect(); } catch(e) {}
     } else {
         const rawDmg = BOSS_DATA[combat.bossStage].baseDamage || 1;
-        const bossDmg = Math.round(rawDmg * (combat.baseDamageMultiplier || 1));
+        let bossDmg = Math.round(rawDmg * (combat.baseDamageMultiplier || 1));
+        // Iron Will: reduce damage taken by 1 (minimum 1)
+        if (hasSkill('iron_will') && bossDmg > 1) bossDmg--;
         combat.playerHp = Math.max(0, combat.playerHp - bossDmg);
         state.persistentHp = combat.playerHp;
         try { audio.playHit(); } catch(e) {}

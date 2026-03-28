@@ -11,13 +11,13 @@ export const SHOP_ITEMS = {
         { id: 'helmet_none', name: 'No Helmet', description: 'Living dangerously.', price: 0, equipped: true, slot: 'helmet', value: 'none' },
         { id: 'helmet_iron', name: 'Iron Helm', description: 'Basic protection.', price: 40, slot: 'helmet', value: 'iron' },
         { id: 'helmet_gold', name: 'Gold Helm', description: 'Shiny and protective.', price: 100, slot: 'helmet', value: 'gold' },
-        { id: 'helmet_horned', name: 'Horned Helm', description: 'Intimidation factor. +1 max HP.', price: 120, slot: 'helmet', value: 'horned' },
+        { id: 'helmet_horned', name: 'Horned Helm', description: 'Intimidation factor. Looks fearsome.', price: 120, slot: 'helmet', value: 'horned' },
     ],
     armor: [
         { id: 'armor_basic', name: 'Cloth Armor', description: 'Better than nothing.', price: 0, equipped: true, slot: 'armor', value: 'basic' },
         { id: 'armor_chain', name: 'Chainmail', description: 'Linked for strength.', price: 50, slot: 'armor', value: 'chain' },
-        { id: 'armor_plate', name: 'Plate Armor', description: 'Solid steel defense. +1 max HP.', price: 90, slot: 'armor', value: 'plate' },
-        { id: 'armor_golden', name: 'Golden Armor', description: 'The ultimate flex. +1 max HP.', price: 200, slot: 'armor', value: 'golden' },
+        { id: 'armor_plate', name: 'Plate Armor', description: 'Solid steel defense.', price: 90, slot: 'armor', value: 'plate' },
+        { id: 'armor_golden', name: 'Golden Armor', description: 'The ultimate flex. +10% gold.', price: 200, slot: 'armor', value: 'golden' },
     ],
     capes: [
         { id: 'cape_none', name: 'No Cape', description: 'No capes!', price: 0, equipped: true, slot: 'cape', value: 'none' },
