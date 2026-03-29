@@ -111,7 +111,6 @@ function wireEvents() {
     document.getElementById('btn-leaderboard').addEventListener('click', () => openLeaderboard('map'));
     document.getElementById('btn-close-leaderboard').addEventListener('click', closeLeaderboard);
     document.getElementById('btn-complete-leaderboard').addEventListener('click', () => openLeaderboard('complete'));
-    document.getElementById('btn-test-leaderboard').addEventListener('click', testLeaderboardSubmit);
 
     // Settings
     document.getElementById('btn-close-settings').addEventListener('click', closeSettings);
@@ -1535,29 +1534,6 @@ function closeLeaderboard() {
     showScreen(leaderboardReturnScreen);
 }
 
-function testLeaderboardSubmit() {
-    const btn = document.getElementById('btn-test-leaderboard');
-    btn.textContent = 'SENDING...';
-    const payload = {
-        name: 'TestKnight',
-        gold: 999,
-        accuracy: '85%',
-        deaths: 2,
-        time: '12m 30s'
-    };
-    fetch(LEADERBOARD_API, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-    }).then(() => {
-        btn.textContent = 'SENT! CHECK SHEET';
-        setTimeout(() => { btn.textContent = 'TEST SUBMIT'; }, 3000);
-    }).catch(() => {
-        btn.textContent = 'ERROR';
-        setTimeout(() => { btn.textContent = 'TEST SUBMIT'; }, 3000);
-    });
-}
 
 // ── Share ──
 function shareVictory() {
