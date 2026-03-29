@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ledger-sword-v3';
+const CACHE_NAME = 'ledger-sword-v4';
 const ASSETS = [
     './',
     './index.html',
@@ -37,6 +37,13 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request).then(cached => cached || fetch(event.request))
+        fetch(event.request)
+            .then(response => {
+                // Cache the fresh response for offline use
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                return response;
+            })
+            .catch(() => caches.match(event.request))
     );
 });
