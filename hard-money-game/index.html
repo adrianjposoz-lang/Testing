@@ -396,7 +396,10 @@
     <script type="module" src="js/game.js"></script>
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        // Force update: bypass browser cache for sw.js checks
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+            .then(reg => reg.update())
+            .catch(() => {});
     }
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', e => {
