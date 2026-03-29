@@ -174,7 +174,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   border: 2px solid var(--gold-dark);
   color: var(--white);
   text-align: center;
-  width: 260px;
+  width: min(260px, 80vw);
   outline: none;
 }
 
@@ -414,7 +414,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 
 .boss-hp-bar {
-  width: 300px;
+  width: min(300px, 55vw);
   height: 16px;
   background: var(--bg-darker);
   border: 2px solid var(--gold-dark);
@@ -1539,9 +1539,9 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
     min-width: unset;
     width: 100%;
   }
-  .boss-hp-bar { width: 200px; }
-  .hp-bar { width: 120px; }
-  .timer-bar { width: 100px; }
+  .boss-hp-bar { width: min(200px, 50vw); }
+  .hp-bar { width: min(120px, 30vw); }
+  .timer-bar { width: min(100px, 25vw); }
   .tutorial-content {
     grid-template-columns: 1fr;
   }
@@ -2233,7 +2233,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
   .map-footer .pixel-btn {
     font-size: 6px;
     padding: 4px 6px;
-    min-height: 30px;
+    min-height: 44px;
     width: auto;
     max-width: none;
   }
@@ -3024,7 +3024,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 
 .skill-node {
   flex-shrink: 0;
-  width: 110px;
+  width: min(110px, 28vw);
   padding: 10px 8px;
   background: rgba(22, 33, 62, 0.8);
   border: 2px solid rgba(255,255,255,0.15);
@@ -3241,7 +3241,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 .deal-info-panel {
   flex: 1;
-  min-width: 250px;
+  min-width: min(250px, 100%);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -3256,7 +3256,7 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 }
 .deal-question-panel {
   flex: 1;
-  min-width: 250px;
+  min-width: min(250px, 100%);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -3279,4 +3279,31 @@ canvas, img { image-rendering: pixelated; image-rendering: crisp-edges; }
 .deal-value {
   color: var(--white);
   font-size: 9px;
+}
+
+/* =============================================================
+   SMALL MOBILE (375px and below)
+   ============================================================= */
+@media (max-width: 375px) {
+  .skill-node {
+    width: 90px;
+    padding: 6px 4px;
+    font-size: 7px;
+  }
+  .deal-active {
+    gap: 8px;
+  }
+  .deal-property, .deal-borrower, .deal-loan {
+    padding: 6px;
+    font-size: 8px;
+  }
+  .deal-question-panel .pixel-btn {
+    font-size: 7px;
+    padding: 6px 8px;
+  }
+  .answer-btn {
+    max-width: 100%;
+    font-size: 7px;
+    padding: 6px 4px;
+  }
 }

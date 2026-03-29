@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ledger-sword-v4';
+const CACHE_NAME = 'ledger-sword-v5';
 const ASSETS = [
     './',
     './index.html',
