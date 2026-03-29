@@ -67,9 +67,7 @@ export function startFight(stageNum) {
     if (hasSkill('treasure_hunter')) combat.goldMultiplier += 0.15;
     if (hasSkill('golden_touch')) combat.goldMultiplier += 0.25;
     combat.xpEarned = 0;
-    combat.mechanicState = combat.mechanicState || {};
-    combat.mechanicState.firstWrongProtected = hasSkill('battle_hardened');
-    combat.mechanicState.phoenixUsed = false;
+    // mechanicState skill bonuses are set after boss mechanic init below
 
     // Check rubber banding - died twice on this boss = extra hint
     const deaths = state.deathsPerStage[stageNum] || 0;
@@ -102,6 +100,8 @@ export function startFight(stageNum) {
 
     // Boss mechanic state
     combat.mechanicState = {};
+    combat.mechanicState.firstWrongProtected = hasSkill('battle_hardened');
+    combat.mechanicState.phoenixUsed = false;
     const mechanic = boss.mechanic;
     if (mechanic) {
         switch (mechanic.type) {
@@ -309,10 +309,11 @@ export function selectAnswer(index) {
 
     // Highlight buttons
     const buttons = document.querySelectorAll('.answer-btn');
-    buttons.forEach((btn, i) => {
+    buttons.forEach((btn) => {
         btn.disabled = true;
-        if (i === q.correctIndex) btn.classList.add('correct');
-        if (i === index && !correct) btn.classList.add('wrong');
+        const btnIdx = parseInt(btn.dataset.index);
+        if (btnIdx === q.correctIndex) btn.classList.add('correct');
+        if (btnIdx === index && !correct) btn.classList.add('wrong');
     });
 
     if (correct) {
@@ -329,9 +330,10 @@ function timeOut() {
 
     const q = combat.currentQuestion;
     const buttons = document.querySelectorAll('.answer-btn');
-    buttons.forEach((btn, i) => {
+    buttons.forEach((btn) => {
         btn.disabled = true;
-        if (i === q.correctIndex) btn.classList.add('correct');
+        const btnIdx = parseInt(btn.dataset.index);
+        if (btnIdx === q.correctIndex) btn.classList.add('correct');
     });
 
     onWrongAnswer(q, 'Time ran out');
@@ -732,7 +734,7 @@ function getDeathTip() {
 
     // Contextual tips based on player state
     if (state.inventory.potion_hp === 0) {
-        tips.push('💡 Tip: Health Potions from the shop restore 2 HP mid-fight. Stock up before tough battles!');
+        tips.push('💡 Tip: Health Potions from the shop restore 1 HP mid-fight. Stock up before tough battles!');
     }
     if (state.inventory.shield_block === 0 && !state.ownedItems.has('shield_block')) {
         tips.push('💡 Tip: Magic Shields from the shop can block one wrong answer — a lifesaver on hard bosses.');
@@ -785,16 +787,21 @@ export function useHint() {
     const q = combat.currentQuestion;
     const buttons = document.querySelectorAll('.answer-btn');
     const wrongIndices = [];
-    buttons.forEach((btn, i) => {
-        if (i !== q.correctIndex && !btn.disabled) {
-            wrongIndices.push(i);
+    buttons.forEach((btn) => {
+        const btnIdx = parseInt(btn.dataset.index);
+        if (btnIdx !== q.correctIndex && !btn.disabled) {
+            wrongIndices.push(btnIdx);
         }
     });
 
     if (wrongIndices.length > 0) {
         const removeIdx = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-        buttons[removeIdx].disabled = true;
-        buttons[removeIdx].classList.add('eliminated');
+        // Find the button with this dataset.index (may differ from DOM position after shuffle)
+        const targetBtn = Array.from(buttons).find(b => parseInt(b.dataset.index) === removeIdx);
+        if (targetBtn) {
+            targetBtn.disabled = true;
+            targetBtn.classList.add('eliminated');
+        }
         combat.eliminatedIndex = removeIdx;
     }
 

@@ -203,12 +203,12 @@ function renderCombat() {
 
     // Draw knight (flash white when hit)
     if (anim.playerHit > 0) {
+        // Shake the knight position
+        knightX += (Math.random() - 0.5) * 8;
         // Flash: alternate visible/invisible every 3 frames
         if (Math.floor(anim.playerHit / 3) % 2 === 0) {
             drawKnight(ctx, knightX, knightY, 3, state.equipment, frame);
         }
-        // Shake the knight position
-        knightX += (Math.random() - 0.5) * 8;
         anim.playerHit--;
     } else {
         drawKnight(ctx, knightX, knightY, 3, state.equipment, frame);
@@ -216,6 +216,7 @@ function renderCombat() {
 
     // Draw boss (flash when hit)
     if (anim.bossHit > 0) {
+        bossX += (Math.random() - 0.5) * 6;
         if (Math.floor(anim.bossHit / 3) % 2 === 0) {
             drawBoss(ctx, bossX, bossY, 3, combat.bossStage, frame);
         }
@@ -273,7 +274,6 @@ function drawSlashEffect(ctx, x, y, frame) {
 
     ctx.shadowBlur = 0;
     ctx.restore();
-    ctx.globalAlpha = 1;
 }
 
 // Terrain themes per stage

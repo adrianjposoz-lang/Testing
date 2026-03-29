@@ -275,6 +275,10 @@ function endCutscene() {
     }
 }
 
+// Pre-computed random positions for cutscene elements (avoids flicker from Math.random() in draw loop)
+const _cutsceneRubble = Array.from({length: 12}, () => ({x: Math.random() * 300, y: Math.random() * 30, w: 8 + Math.random() * 15, h: 6 + Math.random() * 10}));
+const _cutsceneSparkles = Array.from({length: 20}, () => ({x: Math.random() * 240, y: Math.random() * 200}));
+
 function drawCutsceneScene(ctx, scene, w, h) {
     // Simple scene backgrounds
     ctx.fillStyle = '#1a1a2e';
@@ -427,12 +431,10 @@ function drawCutsceneScene(ctx, scene, w, h) {
             ctx.fillRect(348, 158, 22, 26); ctx.fillRect(418, 158, 22, 26);
             ctx.fillStyle = 'rgba(255,80,20,0.6)';
             ctx.fillRect(378, 198, 29, 34);
-            // Rubble on ground
+            // Rubble on ground (pre-computed positions to avoid flicker)
             ctx.fillStyle = '#555555';
-            for (let i = 0; i < 12; i++) {
-                const rx = 260 + Math.random() * 300;
-                const ry = h * 0.6 + Math.random() * 30;
-                ctx.fillRect(rx, ry, 8 + Math.random() * 15, 6 + Math.random() * 10);
+            for (const r of _cutsceneRubble) {
+                ctx.fillRect(260 + r.x, h * 0.6 + r.y, r.w, r.h);
             }
             // Dead trees
             ctx.fillStyle = '#2a1a0a';
@@ -702,12 +704,10 @@ function drawCutsceneScene(ctx, scene, w, h) {
             ctx.fillStyle = '#cc2222';
             ctx.fillRect(312, 20, 3, 40); ctx.fillRect(316, 22, 18, 10);
             ctx.fillRect(482, 20, 3, 40); ctx.fillRect(486, 22, 18, 10);
-            // Celebration - golden sparkles
+            // Celebration - golden sparkles (pre-computed positions)
             ctx.fillStyle = '#ffdd44';
-            for (let i = 0; i < 20; i++) {
-                const sx = 280 + Math.random() * 240;
-                const sy = 50 + Math.random() * 200;
-                ctx.fillRect(sx, sy, 3, 3);
+            for (const s of _cutsceneSparkles) {
+                ctx.fillRect(280 + s.x, 50 + s.y, 3, 3);
             }
             // People celebrating (tiny pixel figures)
             ctx.fillStyle = '#cc8866';
@@ -1347,6 +1347,15 @@ function executeReset() {
     state.deathsPerStage = {};
     state.endlessMode = false;
     state.endlessRound = 0;
+    state.skills = new Set();
+    state.xp = 0;
+    state.totalXp = 0;
+    state.mistakeJournal = [];
+    state.completedDeals = new Set();
+    state.scoreSubmitted = false;
+    state.persistentHp = 5;
+    state.persistentMaxHp = 5;
+    state.totalPlaytime = 0;
     document.getElementById('btn-start').textContent = 'PRESS START';
     showScreen('title');
     try { audio.stopMusic(); } catch(e) {}
