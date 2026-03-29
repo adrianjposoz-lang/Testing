@@ -1414,7 +1414,9 @@ function openStats() {
 
 // ── Leaderboard ──
 const LEADERBOARD_KEY = 'ledger_and_sword_leaderboard';
+const LEADERBOARD_API = 'https://script.google.com/macros/s/AKfycbwZ5zTYKgZEa0OB7aXUQ3u_WsUfNWVtWELmtXz6sf0remx4P4-CcBaSS0jAevLSNKgl/exec';
 let leaderboardReturnScreen = 'map';
+let publicScores = null;
 
 function getLeaderboard() {
     try {
@@ -1427,7 +1429,6 @@ function saveLeaderboardEntry(entry) {
     const board = getLeaderboard();
     board.push(entry);
     board.sort((a, b) => b.score - a.score);
-    // Keep top 10
     const top = board.slice(0, 10);
     try { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top)); } catch(e) {}
 }
@@ -1443,34 +1444,89 @@ export function recordScore() {
         date: new Date().toLocaleDateString()
     };
     saveLeaderboardEntry(entry);
+
+    // Submit to public leaderboard (only on campaign complete, once per run)
+    if (!state.scoreSubmitted) {
+        state.scoreSubmitted = true;
+        saveGame();
+        submitPublicScore(entry);
+    }
+}
+
+function submitPublicScore(entry) {
+    const payload = {
+        name: entry.name,
+        gold: entry.score,
+        accuracy: entry.accuracy + '%',
+        deaths: Object.values(state.deathsPerStage || {}).reduce((a, b) => a + b, 0),
+        time: formatPlaytime(state.totalPlaytime || 0)
+    };
+    fetch(LEADERBOARD_API, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+}
+
+function formatPlaytime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m ${s}s`;
+}
+
+function fetchPublicScores() {
+    return fetch(LEADERBOARD_API)
+        .then(r => r.json())
+        .then(data => { publicScores = data; return data; })
+        .catch(() => { publicScores = null; return null; });
 }
 
 function openLeaderboard(returnTo) {
     try { audio.playMenuSelect(); } catch(e) {}
     leaderboardReturnScreen = returnTo || 'map';
     const content = document.getElementById('leaderboard-content');
-    const board = getLeaderboard();
-
-    if (board.length === 0) {
-        content.innerHTML = '<p class="codex-empty">No scores yet. Defeat bosses to earn your place!</p>';
-    } else {
-        let html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>NAME</th><th>GOLD</th><th>ACC</th><th>COMBO</th><th>KILLS</th></tr></thead><tbody>';
-        board.forEach((entry, i) => {
-            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
-            html += `<tr${i < 3 ? ' class="top-score"' : ''}>
-                <td>${medal}</td>
-                <td>${entry.name}</td>
-                <td>${entry.score}G</td>
-                <td>${entry.accuracy}%</td>
-                <td>${entry.combo}x</td>
-                <td>${entry.kills}</td>
-            </tr>`;
-        });
-        html += '</tbody></table>';
-        content.innerHTML = html;
-    }
-
+    content.innerHTML = '<p class="codex-empty">Loading scores...</p>';
     showScreen('leaderboard');
+
+    fetchPublicScores().then(scores => {
+        if (!scores || scores.length === 0) {
+            // Fall back to local scores
+            const board = getLeaderboard();
+            if (board.length === 0) {
+                content.innerHTML = '<p class="codex-empty">No scores yet. Complete the campaign to earn your place!</p>';
+            } else {
+                renderScoreTable(content, board, true);
+            }
+        } else {
+            renderScoreTable(content, scores, false);
+        }
+    });
+}
+
+function renderScoreTable(content, scores, isLocal) {
+    let html = `<p style="font-size:8px; color:var(--gold); margin-bottom:6px;">${isLocal ? 'LOCAL SCORES' : 'GLOBAL LEADERBOARD'}</p>`;
+    html += '<table class="leaderboard-table"><thead><tr><th>#</th><th>NAME</th><th>GOLD</th><th>ACC</th><th>DEATHS</th><th>TIME</th></tr></thead><tbody>';
+    scores.forEach((entry, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+        const name = entry.name || 'Unknown';
+        const gold = isLocal ? entry.score : entry.gold;
+        const acc = isLocal ? entry.accuracy + '%' : entry.accuracy;
+        const deaths = entry.deaths ?? '-';
+        const time = entry.time || '-';
+        html += `<tr${i < 3 ? ' class="top-score"' : ''}>
+            <td>${medal}</td>
+            <td>${name}</td>
+            <td>${gold}G</td>
+            <td>${acc}</td>
+            <td>${deaths}</td>
+            <td>${time}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    content.innerHTML = html;
 }
 
 function closeLeaderboard() {

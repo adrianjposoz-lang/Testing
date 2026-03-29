@@ -36,7 +36,9 @@ export const state = {
     totalXp: 0,
     skills: {},
     lastEventStage: 0,
-    completedDeals: []
+    completedDeals: [],
+    scoreSubmitted: false,
+    totalPlaytime: 0
 };
 
 // ── Combat State ──
@@ -102,6 +104,14 @@ export function init() {
 
     // Start game loop
     gameLoop();
+
+    // Track playtime (1 second intervals, only on active game screens)
+    setInterval(() => {
+        const activeScreens = ['map', 'combat', 'shop', 'event'];
+        if (activeScreens.includes(state.screen)) {
+            state.totalPlaytime++;
+        }
+    }, 1000);
 
     // Load settings if saved
     const saved = SaveSystem.load();
@@ -1039,5 +1049,7 @@ export function loadGame() {
     state.completedDeals = data.completedDeals || [];
     state.endlessMode = data.endlessMode || false;
     state.endlessRound = data.endlessRound || 0;
+    state.scoreSubmitted = data.scoreSubmitted || false;
+    state.totalPlaytime = data.totalPlaytime || 0;
     return true;
 }
