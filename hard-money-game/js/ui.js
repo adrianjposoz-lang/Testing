@@ -1789,6 +1789,7 @@ function openJournal() {
     const topicStats = {};
     for (let i = 1; i <= 10; i++) topicStats[i] = { wrong: 0, corrected: 0, topic: STAGE_TOPICS[i] };
     journal.forEach(e => {
+        if (!topicStats[e.stage]) return;
         topicStats[e.stage].wrong += e.reviewedWrong;
         topicStats[e.stage].corrected += e.reviewedCorrect;
     });
