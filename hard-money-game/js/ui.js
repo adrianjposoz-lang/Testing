@@ -1464,6 +1464,7 @@ export function recordScore() {
 
 function submitPublicScore(entry) {
     const payload = {
+        type: 'score',
         name: entry.name,
         gold: entry.score,
         accuracy: entry.accuracy + '%',

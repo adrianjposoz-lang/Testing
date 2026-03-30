@@ -4,6 +4,48 @@ import { BOSS_DATA } from './cutscenes.js';
 import { audio } from './audio.js';
 import { state, combat, showScreen, saveGame, getFrame, anim, hasSkill } from './engine.js';
 
+const LEADERBOARD_API = 'https://script.google.com/macros/s/AKfycbwZ5zTYKgZEa0OB7aXUQ3u_WsUfNWVtWELmtXz6sf0remx4P4-CcBaSS0jAevLSNKgl/exec';
+
+// ── Submit Boss Progress to Google Sheets ──
+function submitBossProgress(bossStage, result) {
+    const boss = BOSS_DATA[bossStage];
+    if (!boss || state.endlessMode) return;
+    const totalDeaths = Object.values(state.deathsPerStage || {}).reduce((a, b) => a + b, 0);
+    const accuracy = combat.questionsAnswered > 0
+        ? Math.round(((combat.questionsAnswered - combat.wrongAnswers) / combat.questionsAnswered) * 100)
+        : 0;
+    const payload = {
+        type: 'progress',
+        name: state.playerName,
+        stage: bossStage,
+        boss: boss.name,
+        result: result,
+        accuracy: accuracy + '%',
+        questionsRight: combat.questionsAnswered - combat.wrongAnswers,
+        questionsTotal: combat.questionsAnswered,
+        hpRemaining: result === 'WIN' ? combat.playerHp + '/' + combat.playerMaxHp : '0/' + combat.playerMaxHp,
+        deaths: totalDeaths,
+        deathsThisBoss: state.deathsPerStage[bossStage] || 0,
+        gold: state.gold,
+        time: formatProgressTime(state.totalPlaytime || 0)
+    };
+    fetch(LEADERBOARD_API, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+}
+
+function formatProgressTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+}
+
 // ── Start Fight ──
 export function startFight(stageNum) {
     const boss = BOSS_DATA[stageNum];
@@ -701,6 +743,7 @@ function onBossDefeated() {
         setTimeout(() => notif.remove(), 4000);
     }
 
+    submitBossProgress(combat.bossStage, 'WIN');
     saveGame();
     showScreen('victory');
 }
@@ -726,6 +769,7 @@ function onPlayerDeath() {
     // Contextual death tip
     document.getElementById('death-tip').textContent = getDeathTip();
 
+    submitBossProgress(combat.bossStage, 'DIED');
     showScreen('death');
 }
 
